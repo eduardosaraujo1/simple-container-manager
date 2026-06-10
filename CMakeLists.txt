@@ -19,6 +19,8 @@ add_executable(workspace
   ${TS_FILES}
   model/dockercli.h model/dockercli.cpp
   model/data-objects/containerinfo.h model/data-objects/containerinfo.cpp
+  signaltransmitter.h signaltransmitter.cpp
+  signalreceiver.h signalreceiver.cpp
 )
 target_link_libraries(workspace PRIVATE Qt${QT_VERSION_MAJOR}::Core)
 
