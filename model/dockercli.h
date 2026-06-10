@@ -1,15 +1,24 @@
 #ifndef DOCKERCLI_H
 #define DOCKERCLI_H
 
-class DockerCLI
+#include <QProcess>
+#include <QStringList>
+#include <QObject>
+#include "data-objects/containerinfo.h"
+
+class DockerCLI : public QObject
 {
-/*
-SPEC
-ContainerData getContainer(QString containerId)
-QVector<ContainerData> listContainers(QString containerId)
-*/
+    Q_OBJECT
+
 public:
-    DockerCLI();
+    explicit DockerCLI(QObject *parent = nullptr);
+
+    void updateContainers(QStringList names);
+private:
+    QProcess proc;
+    QList<ContainerInfo> containers;
+signals:
+    void containersUpdated(QList<ContainerInfo> containers);
 };
 
 #endif // DOCKERCLI_H

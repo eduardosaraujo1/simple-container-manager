@@ -1,10 +1,16 @@
 #ifndef CONTAINERINFO_H
 #define CONTAINERINFO_H
 
-class ContainerInfo
+#include <QJsonObject>
+#include "containerstatus.h"
+
+struct ContainerInfo
 {
-public:
-    ContainerInfo();
+    QString id;
+    QString name;
+    ContainerStatus status;
+
+    static ContainerInfo fromJsonObject(const QJsonObject &obj, bool &error);
 };
 
 #endif // CONTAINERINFO_H

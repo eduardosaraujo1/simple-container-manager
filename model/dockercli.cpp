@@ -1,3 +1,5 @@
 #include "dockercli.h"
 
-DockerCLI::DockerCLI() {}
+QList<ContainerInfo> DockerCLI::listContainers(QStringList names) {
+    //
+}
