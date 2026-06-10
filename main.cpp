@@ -1,10 +1,6 @@
 #include <QCoreApplication>
 #include <QLocale>
 #include <QTranslator>
-#include <QObject>
-#include <QProcess>
-#include "signalreceiver.h"
-#include "signaltransmitter.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,35 +16,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Set up code that uses the Qt event loop here.
-    // Call QCoreApplication::quit() or QCoreApplication::exit() to quit the application.
-    // A not very useful example would be including
-    // #include <QTimer>
-    // near the top of the file and calling
-    // QTimer::singleShot(5000, &a, &QCoreApplication::quit);
-    // which quits the application after 5 seconds.
-
-    SignalTransmitter st;
-    SignalReceiver sr;
-
-    QProcess p;
-    // p.start("docker", QStringList{
-        // "ps",
-        // "-a",
-        // "--format='{\"ID\":{{json .ID}},\"Names\":{{json .Names}},\"State\":{{json .State}}}'"
-    // });
-    p.start("docker", QStringList{
-        "events",
-        "--format",
-        "'{\"Action\":{{json .Action}},\"ContainerID\":{{json .Actor.ID}}'"
-    });
-
-    QObject::connect(&p,&QProcess::readyReadStandardOutput, &p, [&p]() {
-        qInfo() << p.readAllStandardOutput();
-    });
-
-    // If you do not need a running Qt event loop, remove the call
-    // to QCoreApplication::exec() or use the Non-Qt Plain C++ Application template.
+    // I usually put this in a dependency manager class (like Laravel Service Providers, except smaller and without reflection)
+    // Since this is a testing suite, let's just keep it here
+    // DockerCLI dcli();
+    // DockerEventStream devl(); // This uses signals and slots to communicate to DockerService when something changed. Not sure if this is the best decision
+    // DockerService ds(dcli,devl);
 
     return QCoreApplication::exec();
 }
