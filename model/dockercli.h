@@ -12,8 +12,7 @@ class DockerCLI : public QObject
 
 public:
     explicit DockerCLI(QObject *parent = nullptr);
-
-    void requestContainerRefresh(QStringList namesFilter);
+    ~DockerCLI();    void requestContainerRefresh(QStringList namesFilter);
 signals:
     // Callback-based response (to avoid blocking Qt Event Loop)
     void containersUpdated(QList<ContainerInfo> containers);

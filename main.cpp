@@ -2,7 +2,53 @@
 #include <QLocale>
 #include <QTranslator>
 #include <QProcess>
+
 #include <QStringList>
+#include <QTimer>
+#include <QSignalSpy>
+#include <model/dockercli.h>
+#include <model/data-objects/containerinfo.h>
+
+int test_dockercli_1() {
+    DockerCLI dcli;
+    QSignalSpy spy(&dcli, &DockerCLI::containersUpdated);
+
+    QObject::connect(&dcli, &DockerCLI::containersUpdated, &dcli, [&dcli](QList<ContainerInfo> containers) {
+        for (const ContainerInfo &container : containers) {
+            qInfo() << container.toString();
+        }
+    });
+
+    dcli.requestContainerRefresh({"portainer", "oracle-xe-11g"});
+
+    spy.wait(5000);
+
+    assert(spy.count() == 1);
+    return 0;
+}
+
+int test_dockercli_2() {
+    DockerCLI dcli;
+    QSignalSpy spy(&dcli, &DockerCLI::containersUpdated);
+
+    QObject::connect(&dcli, &DockerCLI::containersUpdated, &dcli, [&dcli](QList<ContainerInfo> containers) {
+        for (const ContainerInfo &container : containers) {
+            qInfo() << container.toString();
+        }
+    });
+
+    dcli.requestContainerRefresh({"oracle-xe-21c"});
+    dcli.requestContainerRefresh({"portainer"}); // should not show (unless system is fast)
+
+    spy.wait(5000);
+    assert(spy.count() == 1);
+    return 0;
+}
+
+int e2e() {
+    // Work in Progress
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -18,25 +64,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    // I usually put this in a dependency manager class (like Laravel Service Providers, except smaller and without reflection)
-    // Since this is a testing suite, let's just keep it here
-    // DockerCLI dcli();
-    // DockerEventStream devl(); // This uses signals and slots to communicate to DockerService when something changed. Not sure if this is the best decision
-    // DockerService ds(dcli,devl);
+    test_dockercli_1();
+    qInfo() << "---";
+    test_dockercli_2();
 
-    QProcess p;
-    QObject::connect(&p, &QProcess::finished, &a, [&p](int code, QProcess::ExitStatus status) {
-        qInfo() << p.readAllStandardOutput();
-        qInfo() << " SEPARATOR ";
-        qInfo() << p.readAllStandardError();
-    });
-    p.start("docker", QStringList{
-        "ps",
-        "-a",
-        "--no-trunc",
-        "--filter=name=oracle-xe-11g",
-        "--format=\"{\"id\":{{json .ID}},\"name\":{{json .Names}},\"status\":{{json .State}}}\""
-    });
-
-    return QCoreApplication::exec();
+    // return QCoreApplication::exec();
+    return 0;
 }

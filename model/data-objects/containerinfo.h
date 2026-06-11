@@ -3,6 +3,7 @@
 
 #include <QJsonObject>
 #include <QString>
+#include <QStringBuilder>
 
 struct ContainerInfo
 {
@@ -19,10 +20,6 @@ public:
         Unknown
     };
 
-    QString id;
-    QString name;
-    Status status;
-
     static ContainerInfo fromJsonObject(const QJsonObject &obj, bool &error);
 
     /**
@@ -31,6 +28,14 @@ public:
      * @return Status
      */
     static Status statusFromString(const QString &str);
+
+    static QString statusToString(const Status &status);
+
+    QString id;
+    QString name;
+    Status status;
+
+    const QString toString() const;
 };
 
 #endif // CONTAINERINFO_H
