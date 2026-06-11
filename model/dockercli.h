@@ -1,10 +1,10 @@
 #ifndef DOCKERCLI_H
 #define DOCKERCLI_H
 
+#include <QObject>
 #include <QProcess>
 #include <QStringList>
-#include <QObject>
-#include "data-objects/containerinfo.h"
+#include <model/data-objects/containerinfo.h>
 
 class DockerCLI : public QObject
 {
@@ -13,12 +13,15 @@ class DockerCLI : public QObject
 public:
     explicit DockerCLI(QObject *parent = nullptr);
 
-    void updateContainers(QStringList names);
+    void requestContainerRefresh(QStringList namesFilter);
+signals:
+    // Callback-based response (to avoid blocking Qt Event Loop)
+    void containersUpdated(QList<ContainerInfo> containers);
+private slots:
+    // Runs when the
+    void onProcessDone(int exitCode, QProcess::ExitStatus status);
 private:
     QProcess proc;
-    QList<ContainerInfo> containers;
-signals:
-    void containersUpdated(QList<ContainerInfo> containers);
 };
 
 #endif // DOCKERCLI_H

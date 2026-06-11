@@ -19,13 +19,16 @@ add_executable(workspace
   ${TS_FILES}
   model/dockercli.h model/dockercli.cpp
   model/data-objects/containerinfo.h model/data-objects/containerinfo.cpp
-  model/data-objects/containerstatus.h
+
 
   model/dockereventstream.h model/dockereventstream.cpp
+  model/data-objects/dockerevent.h model/data-objects/dockerevent.cpp
+
 
 
 )
 target_link_libraries(workspace PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+target_include_directories(workspace PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 if(COMMAND qt_create_translation)
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})

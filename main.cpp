@@ -1,6 +1,8 @@
 #include <QCoreApplication>
 #include <QLocale>
 #include <QTranslator>
+#include <QProcess>
+#include <QStringList>
 
 int main(int argc, char *argv[])
 {
@@ -21,6 +23,20 @@ int main(int argc, char *argv[])
     // DockerCLI dcli();
     // DockerEventStream devl(); // This uses signals and slots to communicate to DockerService when something changed. Not sure if this is the best decision
     // DockerService ds(dcli,devl);
+
+    QProcess p;
+    QObject::connect(&p, &QProcess::finished, &a, [&p](int code, QProcess::ExitStatus status) {
+        qInfo() << p.readAllStandardOutput();
+        qInfo() << " SEPARATOR ";
+        qInfo() << p.readAllStandardError();
+    });
+    p.start("docker", QStringList{
+        "ps",
+        "-a",
+        "--no-trunc",
+        "--filter=name=oracle-xe-11g",
+        "--format=\"{\"id\":{{json .ID}},\"name\":{{json .Names}},\"status\":{{json .State}}}\""
+    });
 
     return QCoreApplication::exec();
 }
