@@ -45,9 +45,42 @@ int test_dockercli_2() {
     return 0;
 }
 
-int e2e() {
-    // Work in Progress
-    return 0;
+int test_dockerevent_1() {
+    DockerEventStream des;
+    QSignalSpy spy(&des, &DockerEventStream::eventReceived);
+    QProcess proc;
+
+    QObject::connect(&des, DockerEventStream::eventReceived, &des, [&des](DockerEvent event) {
+        qInfo() << event.toString();
+        qInfo() << "---";;
+    });
+
+    proc.start("docker", QStringList{
+        "stop",
+        "oracle-xe-11g"
+    });
+    proc.waitForFinished(5000);
+
+    assert(spy.count() >= 1);
+}
+
+int test_dockerevent_2() {
+    DockerEventStream des;
+    QSignalSpy spy(&des, &DockerEventStream::eventReceived);
+    QProcess proc;
+
+    QObject::connect(&des, DockerEventStream::eventReceived, &des, [&des](DockerEvent event) {
+        qInfo() << event.toString();
+        qInfo() << "---";;
+    });
+
+    proc.start("docker", QStringList{
+        "start",
+        "oracle-xe-11g"
+    });
+    proc.waitForFinished(5000);
+
+    assert(spy.count() >= 1);
 }
 
 int main(int argc, char *argv[])
@@ -64,9 +97,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    test_dockercli_1();
-    qInfo() << "---";
-    test_dockercli_2();
+    // test_dockercli_1();
+    // qInfo() << "---";
+    // test_dockercli_2();
 
     // return QCoreApplication::exec();
     return 0;
