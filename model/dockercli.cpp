@@ -50,19 +50,68 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     QList<ContainerInfo> finalResult;
 
     for (const QString &line : lines) {
-        bool modelParseSuccess;
-        QJsonParseError jsonParseError;
-        QJsonDocument doc = QJsonDocument::fromJson(line.toUtf8(), &jsonParseError);
+        bool parseSuccess;
+        ContainerInfo container = parseContainerInfoString(line, parseSuccess);
 
-        if (! doc.isObject() || jsonParseError.error != QJsonParseError::NoError) {
-            qWarning() << "Ocorreu um erro ao interpretar o resultado JSON: "
-                       << jsonParseError.errorString();
-            continue;
+        if (parseSuccess) {
+            finalResult.append(container);
+        } else {
+            emit this->containerParseError(line);
         }
-
-        finalResult.append(ContainerInfo::fromJsonObject(doc.object(), modelParseSuccess));
     }
 
     // Emit signal
     emit this->containersUpdated(finalResult);
+}
+
+const ContainerInfo DockerCLI::parseContainerInfoString(const QString &str, bool &success) {
+    success = true;
+
+    // Parse using Qt's String parser
+    QJsonParseError jsonParseError;
+    QJsonDocument doc = QJsonDocument::fromJson(str.toUtf8(), &jsonParseError);
+    QJsonObject obj;
+
+    if (jsonParseError.error != QJsonParseError::NoError) {
+        success = false;
+        qWarning() << "parseContainerInfoString: Error when parsing JSON output. String: \n" %
+                   str % "\nError:" %
+                   jsonParseError.errorString();
+        return ContainerInfo{};
+    }
+
+    // Ensure parsed JSON is an object
+    obj = doc.object();
+    if (obj.isEmpty()) {
+        success = false;
+        qWarning() << "parseContainerInfoString: JSON parsed succcessfilly but not as valid object. \nString: " %
+                   str;
+        return ContainerInfo{};
+    }
+
+    // Ensure object has required fields
+    if (! (obj.contains("id")
+          && obj.contains("name")
+          && obj.contains("status")
+          )) {
+        success = false;
+        qWarning() << "parseContainerInfoString: JSON parsed succcessfilly but does not have the required keys. \nString: " %
+                   str;
+        return ContainerInfo{};
+    }
+
+    const ContainerInfo::Status status
+        = ContainerInfo::statusFromString(obj.value("status").toString());
+
+    if (status == ContainerInfo::Status::Unknown) {
+        qWarning() << "parseContainerInfoString: Status could not be correctly identified. Received '"
+                          % obj.value("status").toString()
+                          % "'";
+    }
+
+    return ContainerInfo{
+        obj.value("id").toString(),
+        obj.value("name").toString(),
+        status
+    };
 }

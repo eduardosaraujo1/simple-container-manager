@@ -3,7 +3,6 @@
 
 #include <QJsonObject>
 #include <QString>
-#include <QStringBuilder>
 
 struct ContainerInfo
 {
@@ -20,20 +19,32 @@ public:
         Unknown
     };
 
-    static ContainerInfo fromJsonObject(const QJsonObject &obj, bool &error);
-
-    /**
-     * @brief Parse Status from string (case insensitive)
-     * @param str
-     * @return Status
-     */
     static Status statusFromString(const QString &str);
 
     static QString statusToString(const Status &status);
+private:
+    QString m_id;
+    QString m_name;
+    Status m_status;
+public:
+    ContainerInfo();
 
-    QString id;
-    QString name;
-    Status status;
+    ContainerInfo(QString id, QString name, Status status)
+        :  m_id(id), m_name(name), m_status(status) {}
+
+    const QString& id() const {
+        return this->m_id;
+    }
+    const QString& name() const {
+        return this->m_name;
+    }
+    const Status& status() const {
+        return this->m_status;
+    }
+
+    bool isValid() const {
+        return m_id.isEmpty();
+    }
 
     const QString toString() const;
 };
