@@ -27,7 +27,7 @@ public:
 signals:
     void containersUpdated(QList<ContainerInfo> containers);
 
-    void containerParseError(const QString &offendingJsonLine);
+    void parseErrorOccured();
 private slots:
     // Runs when the
     void onProcessDone(int exitCode, QProcess::ExitStatus status);

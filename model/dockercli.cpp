@@ -45,6 +45,7 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
         return;
     }
 
+    bool hasErrors = false;
     const QString output = QString::fromUtf8(proc.readAllStandardOutput());
     const QStringList lines = output.split("\n", Qt::SkipEmptyParts);
     QList<ContainerInfo> finalResult;
@@ -56,8 +57,12 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
         if (parseSuccess) {
             finalResult.append(container);
         } else {
-            emit this->containerParseError(line);
+            hasErrors = true;
         }
+    }
+
+    if (hasErrors) {
+        emit this->parseErrorOccurred();
     }
 
     // Emit signal
