@@ -27,7 +27,7 @@ private:
     QString m_name;
     Status m_status;
 public:
-    ContainerInfo();
+    ContainerInfo() = default;
 
     ContainerInfo(QString id, QString name, Status status)
         :  m_id(id), m_name(name), m_status(status) {}
