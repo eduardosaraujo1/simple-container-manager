@@ -22,6 +22,8 @@ add_executable(workspace
 
   model/dockereventstream.h model/dockereventstream.cpp
   model/data-objects/dockerevent.h model/data-objects/dockerevent.cpp
+  model/preferencesmanager.h model/preferencesmanager.cpp
+  model/data-objects/containerpreferences.h model/data-objects/containerpreferences.cpp
 
 
 )
