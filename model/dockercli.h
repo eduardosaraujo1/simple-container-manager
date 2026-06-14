@@ -15,16 +15,16 @@ private:
     // I considered making `success` an enum or a proper `Exception` here. However,
     // decided against it because if an error happens here it should go to the
     // logger. After that, the application does not care what went wrong, it should just display
-    // error message to the user guiding him to send the logs.
+    // error message to the user guiding him to send the logs to the system admin.
     static const ContainerInfo parseContainerInfoString(const QString &str, bool &success);
 public:
     explicit DockerCLI(QObject *parent = nullptr);
 
     ~DockerCLI();
 
-    void requestContainerRefresh(QStringList namesFilter);
+    void requestContainerRefresh(const QStringList &namesFilter);
 signals:
-    void containersUpdated(QList<ContainerInfo> containers);
+    void containersUpdated(const QList<ContainerInfo> &containers);
 
     void parseErrorOccurred();
 private slots:

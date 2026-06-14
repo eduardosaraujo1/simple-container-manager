@@ -20,7 +20,7 @@ DockerCLI::~DockerCLI() {
  * @brief Start container read process; emits containersUpdated signal when read is finished.
  * @param namesFilter Filters which containers should be used by name
  */
-void DockerCLI::requestContainerRefresh(QStringList namesFilter) {
+void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
     QStringList arguments{
         "ps",
         "-a",
