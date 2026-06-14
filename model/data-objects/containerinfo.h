@@ -4,7 +4,7 @@
 #include <QJsonObject>
 #include <QString>
 
-struct ContainerInfo
+class ContainerInfo
 {
 public:
     enum class Status
@@ -19,17 +19,17 @@ public:
         Unknown
     };
 
-    static Status statusFromString(const QString &str);
+    static Status statusFromString(QStringView str);
 
     static QString statusToString(const Status &status);
 private:
     QString m_id;
     QString m_name;
-    Status m_status;
+    Status m_status = Status::Unknown;
 public:
     ContainerInfo() = default;
 
-    ContainerInfo(QString id, QString name, Status status)
+    ContainerInfo(const QString &id, const QString &name, Status status)
         :  m_id(id), m_name(name), m_status(status) {}
 
     const QString& id() const {
@@ -38,15 +38,13 @@ public:
     const QString& name() const {
         return this->m_name;
     }
-    const Status& status() const {
+    Status status() const {
         return this->m_status;
     }
 
-    bool isValid() const {
-        return m_id.isEmpty();
-    }
+    bool isValid() const;
 
-    const QString toString() const;
+    QString toString() const;
 };
 
 #endif // CONTAINERINFO_H

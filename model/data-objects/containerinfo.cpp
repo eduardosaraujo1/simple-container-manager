@@ -1,32 +1,22 @@
 #include "containerinfo.h"
 #include <QJsonObject>
 
-
-const QString ContainerInfo::toString() const {
-    return "ContainerInfo[" %
-           this->id() % "," %
-           this->name() % "," %
-           ContainerInfo::statusToString(this->status()) % "]";
-}
-
-ContainerInfo::Status ContainerInfo::statusFromString(const QString &str) {
-    const QString lower = str.toLower();
-    if (lower == "running")
+ContainerInfo::Status ContainerInfo::statusFromString(QStringView str) {
+    if (str.compare(u"running", Qt::CaseInsensitive) == 0)
         return Status::Running;
-    if (lower == "exited")
+    if (str.compare(u"exited", Qt::CaseInsensitive) == 0)
         return Status::Exited;
-    if (lower == "created")
+    if (str.compare(u"created", Qt::CaseInsensitive) == 0)
         return Status::Created;
-    if (lower == "paused")
+    if (str.compare(u"paused", Qt::CaseInsensitive) == 0)
         return Status::Paused;
-    if (lower == "restarting")
+    if (str.compare(u"restarting", Qt::CaseInsensitive) == 0)
         return Status::Restarting;
-    if (lower == "removing")
+    if (str.compare(u"removing", Qt::CaseInsensitive) == 0)
         return Status::Removing;
-    if (lower == "dead")
+    if (str.compare(u"dead", Qt::CaseInsensitive) == 0)
         return Status::Dead;
 
-    qWarning() << "Container '" << str << "' does not have a known status";
     return Status::Unknown;
 }
 
@@ -47,4 +37,15 @@ QString ContainerInfo::statusToString(const ContainerInfo::Status &status) {
         return "dead";
 
     return "unknown";
+}
+
+QString ContainerInfo::toString() const {
+    return "ContainerInfo[id=\"" %
+           this->id() % "\",name=\"" %
+           this->name() % "\",status=\"" %
+           statusToString(this->status()) % "\"]";
+}
+
+bool ContainerInfo::isValid() const {
+    return m_id.isEmpty();
 }
