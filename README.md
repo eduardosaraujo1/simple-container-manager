@@ -6,22 +6,9 @@ Entretanto, a maior parte dos professores e mestres não fazem uso dessa tecnolo
 
 Com o objetivo de me familiarizar com o desenvolvimento de aplicações Desktop nativas e a necessidade de uma ferramenta simples para controle de contâiners de desenvolvimento, surge o **Simple Container Manager**: uma ferramenta que abstrai a gestão de contâiners em uma interface parecida com o [XAMPP](https://www.apachefriends.org/pt_br/index.html).
 
-# Work in Progress: resumo do projeto que pode ser integrado à descrição
-
-The user is creating a Qt Widgets project using Qt Creator on a Linux Mint environment. He does not have much experience on C++, and this is his first project using Qt.
-
-The project is a tool inspired by the ease of use of XAMPP and the flexibility of container technology. A simple UI very similar to XAMPP which allows to list running containers that can be started or stopped, just like XAMPP services.
-
-To prevent unrelated containers from appearing in the UI, a containers-list.config.yaml file will exist to filter which containers should appear, what their display names should be, and (optionally) a display icon for those applications.
-
-The target user-base are system admins who want to use Docker as a base for the development environment of students, who won't have to know docker specifics in order to learn various technologies.
-
-Under the hood, the docker CLI is used with QProcess. `docker events` is used to react dynamically to container status updates. Further decisions are yet to be made.
-
 # Como Utilizar
 
-1. Crie os contâiners necessários para desenvolvimento via Docker
-2. Abra o aplicativo através da versão disponível na seção Releases ou compile usando cmake e Qt
+1. Crie os contâiners necessários para desenvolvimento via Docker 2. Abra o aplicativo através da versão disponível na seção Releases ou compile usando cmake e Qt
     - No momento, nenhuma build foi realizada ainda. Por isso nenhum arquivo BUILD.md será disponibilizado.
 3. Clique no botão "configurações" e ative os contâiners que deseja gerenciar, opcionalmente adicionando um nome customizado.
 
@@ -32,6 +19,11 @@ Para esse projeto, com o intuito de treinar minha adaptabilidade a novas tecnolo
 - **[Qt-Widgets](https://doc.qt.io/qt-6/topics-ui.html#qt-widgets-user-interfaces)** — Framework de desenvolvimento que abstrai a criação de janelas em ambientes Desktop. Diferente do [Qt-quick](https://doc.qt.io/qt-6/topics-graphics2d.html#qt-quick), a versão utilizada é centrada no desenvolvimento de aplicações Desktop com design simples.
 - **[Docker CLI](https://docs.docker.com/reference/cli/docker)** — Será utilizada a interface de linha de comando do Docker (CLI) para gerenciar e interagir com contêineres, imagens e demais recursos.
 - **[C++](https://pt.wikipedia.org/wiki/C%2B%2B)** — Linguagem de baixo nível com suporte a orientação a objetos.
+
+<details>
+
+<summary>Detalhes Técnicos</summary>
+
 
 # Requisitos Funcionais
 
@@ -49,7 +41,11 @@ Para esse projeto, com o intuito de treinar minha adaptabilidade a novas tecnolo
 
 ## RF2 - Gerenciar aplicações na tela inicial
 
-**Descrição:** Ao abrir o aplicativo, uma lista de todas as aplicações previamente configuradas devem estar disponíveis em forma de lista para serem ativadas, desativadas e gerenciadas.
+**Descrição:** Ao abrir o aplicativo, uma lista de todas as aplicações previamente configuradas devem estar disponíveis em forma de lista. Cada aplicação deve mostrar seu status atual (funcionando, parada, pausada ou desconhecida), e ter a opção de iniciar, 
+
+## RF3 - Atualização de status de contâiner
+
+**Descrição:** Para garantir sincronização entre a aplicação e o Docker Engine, a aplicação deve atualizar seu estado interno sempre que identificada uma alteração no status dos contâiners Docker. Além disso, a interface deve conter um botão "refresh" caso o mecanismo de atualização automática falhar.
 
 **Prioridade:** Must-Have
 
@@ -58,8 +54,22 @@ Para esse projeto, com o intuito de treinar minha adaptabilidade a novas tecnolo
 1. listarAplicacoes
 2. ativarAplicacao
 3. desativarAplicacao
-4. gerenciarAplicacao
+4. recarregarAplicações
 5. recarregarConfiguracao
+
+# Work in Progress: resumo do projeto que pode ser integrado à descrição
+
+The user is creating a Qt Widgets project using Qt Creator on a Linux Mint environment. He does not have much experience on C++, and this is his first project using Qt.
+
+The project is a tool inspired by the ease of use of XAMPP and the flexibility of container technology. A simple UI very similar to XAMPP which allows to list running containers that can be started or stopped, just like XAMPP services.
+
+To prevent unrelated containers from appearing in the UI, a containers-list.config.yaml file will exist to filter which containers should appear, what their display names should be, and (optionally) a display icon for those applications.
+
+The target user-base are system admins who want to use Docker as a base for the development environment of students, who won't have to know docker specifics in order to learn various technologies.
+
+Under the hood, the docker CLI is used with QProcess. `docker events` is used to react dynamically to container status updates. If the process is interrupted, the application will try to restart it as soon as possible. If it fails 3 times in a row then disable the process (requiring manual refreshes) and show the user an error.
+
+</details>
 
 ### Roadmap
 
