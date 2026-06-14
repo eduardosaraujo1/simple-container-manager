@@ -9,9 +9,8 @@
 class DockerCLI : public QObject
 {
     Q_OBJECT
-public:
 private:
-    QProcess proc;
+    QProcess proc{this};
 
     // I considered making `success` an enum or a proper `Exception` here. However,
     // decided against it because if an error happens here it should go to the
@@ -27,9 +26,8 @@ public:
 signals:
     void containersUpdated(QList<ContainerInfo> containers);
 
-    void parseErrorOccured();
+    void parseErrorOccurred();
 private slots:
-    // Runs when the
     void onProcessDone(int exitCode, QProcess::ExitStatus status);
 };
 

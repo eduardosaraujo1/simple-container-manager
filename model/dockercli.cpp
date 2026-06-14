@@ -16,6 +16,10 @@ DockerCLI::~DockerCLI() {
     }
 }
 
+/**
+ * @brief Start container read process; emits containersUpdated signal when read is finished.
+ * @param namesFilter Filters which containers should be used by name
+ */
 void DockerCLI::requestContainerRefresh(QStringList namesFilter) {
     QStringList arguments{
         "ps",
@@ -46,6 +50,7 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     }
 
     bool hasErrors = false;
+    // Parse stdout into string in order to remove newline characters and parse each individually
     const QString output = QString::fromUtf8(proc.readAllStandardOutput());
     const QStringList lines = output.split("\n", Qt::SkipEmptyParts);
     QList<ContainerInfo> finalResult;
@@ -62,10 +67,12 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     }
 
     if (hasErrors) {
+        // I have considered emitting the offending string along side this signal
+        // However, the logging layer (qWarning()) should already take care of observability
+        // and the consumer does not care about how many errors haappened
         emit this->parseErrorOccurred();
     }
 
-    // Emit signal
     emit this->containersUpdated(finalResult);
 }
 
