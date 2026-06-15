@@ -4,6 +4,10 @@
 #include <QObject>
 #include <QProcess>
 #include <QStringList>
+#include <QString>
+#include <QStringView>
+#include <QByteArray>
+#include <optional>
 #include <model/data-objects/containerinfo.h>
 
 class DockerCLI : public QObject
@@ -16,7 +20,9 @@ private:
     // decided against it because if an error happens here it should go to the
     // logger. After that, the application does not care what went wrong, it should just display
     // error message to the user guiding him to send the logs to the system admin.
-    static const ContainerInfo parseContainerInfoString(const QString &str, bool &success);
+    static std::optional<ContainerInfo> parseContainerInfo(const QByteArray &rawData);
+
+    static std::optional<QJsonObject> parseJsonObject(const QByteArray &rawData) ;
 public:
     explicit DockerCLI(QObject *parent = nullptr);
 

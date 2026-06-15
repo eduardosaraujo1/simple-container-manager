@@ -110,18 +110,18 @@ int main(int argc, char *argv[])
         }
     }
 
-    test_dockercli_1();
-    qInfo() << "---";
-    test_dockercli_2();
+    // test_dockercli_1();
+    // qInfo() << "---";
+    // test_dockercli_2();
 
-    // qInfo() << "\n--TEST1--\n";
-    // test_dockerevent_1();
-    // qInfo() << "\n--TEST2--\n";
-    // test_dockerevent_2();
-    // qInfo() << "\n--TEST3--\n";
-    // test_dockerevent_3();
-    // qInfo() << "\n--TEST4--\n";
-    // test_dockerevent_4();
+    qInfo() << "\n--TEST1--\n";
+    test_dockerevent_1();
+    qInfo() << "\n--TEST2--\n";
+    test_dockerevent_2();
+    qInfo() << "\n--TEST3--\n";
+    test_dockerevent_3();
+    qInfo() << "\n--TEST4--\n";
+    test_dockerevent_4();
 
     // return QCoreApplication::exec();
     return 0;

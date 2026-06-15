@@ -30,7 +30,7 @@ void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
     };
 
     if (proc.state() != QProcess::NotRunning) {
-        qInfo() << "Docker Containers query is already running: ignoring last request.";
+        qWarning() << "requestContainerRefresh: previous query is still running. Dropping request.";
         return;
     }
 
@@ -44,23 +44,25 @@ void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
 
 void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     if (exitCode != 0 || status == QProcess::ExitStatus::CrashExit) {
-        qWarning() << "Ocorreu um erro desconhecido ao listar os containers. Exit code:" << exitCode
+        qCritical() << "onProcessDone: unexpected error occurred when querying containers. Exit code:" << exitCode
                    << ".\nError output:\n" << proc.readAllStandardError();
         return;
     }
 
-    bool hasErrors = false;
     // Parse stdout into string in order to remove newline characters and parse each individually
-    const QString output = QString::fromUtf8(proc.readAllStandardOutput());
-    const QStringList lines = output.split("\n", Qt::SkipEmptyParts);
+    const QByteArray output = proc.readAllStandardOutput();
+    const QList<QByteArray> lines = output.split('\n');
+
+    bool hasErrors = false;
     QList<ContainerInfo> finalResult;
 
-    for (const QString &line : lines) {
-        bool parseSuccess;
-        ContainerInfo container = parseContainerInfoString(line, parseSuccess);
+    for (const QByteArray &line : lines) {
+        if (line.isEmpty()) continue;
 
-        if (parseSuccess) {
-            finalResult.append(container);
+        auto container = parseContainerInfo(line);
+
+        if (container) {
+            finalResult.append(*container);
         } else {
             hasErrors = true;
         }
@@ -69,56 +71,37 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     if (hasErrors) {
         // I have considered emitting the offending string along side this signal
         // However, the logging layer (qWarning()) should already take care of observability
-        // and the consumer does not care about how many errors haappened
+        // and the consumer does not care about how many errors happened
         emit this->parseErrorOccurred();
     }
 
     emit this->containersUpdated(finalResult);
 }
 
-const ContainerInfo DockerCLI::parseContainerInfoString(const QString &str, bool &success) {
-    success = true;
+std::optional<ContainerInfo> DockerCLI::parseContainerInfo(const QByteArray &rawData) {
 
-    // Parse using Qt's String parser
-    QJsonParseError jsonParseError;
-    QJsonDocument doc = QJsonDocument::fromJson(str.toUtf8(), &jsonParseError);
     QJsonObject obj;
-
-    if (jsonParseError.error != QJsonParseError::NoError) {
-        success = false;
-        qWarning() << "parseContainerInfoString: Error when parsing JSON output. String: \n" %
-                   str % "\nError:" %
-                   jsonParseError.errorString();
-        return ContainerInfo{};
+    {
+        auto parseResult = DockerCLI::parseJsonObject(rawData);
+        if (! parseResult) return std::nullopt;
+        obj = std::move(*parseResult);
     }
 
-    // Ensure parsed JSON is an object
-    obj = doc.object();
-    if (obj.isEmpty()) {
-        success = false;
-        qWarning() << "parseContainerInfoString: JSON parsed succcessfilly but not as valid object. \nString: " %
-                   str;
-        return ContainerInfo{};
-    }
-
-    // Ensure object has required fields
     if (! (obj.contains("id")
           && obj.contains("name")
           && obj.contains("status")
           )) {
-        success = false;
-        qWarning() << "parseContainerInfoString: JSON parsed succcessfilly but does not have the required keys. \nString: " %
-                   str;
-        return ContainerInfo{};
+        qWarning() << "parseContainerInfoString: JSON parsed succcessfilly but does not have the required keys. Raw Data:\n"
+                   << rawData;
+        return std::nullopt;
     }
 
     const ContainerInfo::Status status
         = ContainerInfo::statusFromString(obj.value("status").toString());
 
     if (status == ContainerInfo::Status::Unknown) {
-        qWarning() << "parseContainerInfoString: Status could not be correctly identified. Received '"
-                          % obj.value("status").toString()
-                          % "'";
+        qWarning() << "parseContainerInfoString: Status \""
+                   << obj.value("status").toString() << "\" could not be identified. Defaulting to Status::Unknown";
     }
 
     return ContainerInfo{
@@ -126,4 +109,24 @@ const ContainerInfo DockerCLI::parseContainerInfoString(const QString &str, bool
         obj.value("name").toString(),
         status
     };
+}
+
+std::optional<QJsonObject> DockerCLI::parseJsonObject(const QByteArray &rawData) {
+    QJsonParseError jsonParseError;
+    QJsonDocument doc = QJsonDocument::fromJson(rawData, &jsonParseError);
+
+    if (jsonParseError.error != QJsonParseError::NoError) {
+        qWarning() << "parseJsonObject: Error when parsing JSON output. Raw Data: \n"
+                   << rawData << "\nError:"
+                   << jsonParseError.errorString();
+        return std::nullopt;
+    }
+
+    if (! doc.isObject()) {
+        qWarning() << "parseJsonObject: JSON parsed succcessfilly, but not as valid object. Raw Data: \n"
+                   << rawData;
+        return std::nullopt;
+    }
+
+    return doc.object();
 }

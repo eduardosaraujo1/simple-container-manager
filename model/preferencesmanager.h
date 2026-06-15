@@ -33,7 +33,7 @@ private:
 public:
     explicit PreferencesManager(QObject *parent = nullptr);
 
-    ~PreferencesManager();
+    ~PreferencesManager() = default;
 
     const QList<ContainerSpec>& containers() const {
         return this->m_containers;
