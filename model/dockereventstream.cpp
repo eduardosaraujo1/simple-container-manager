@@ -1,81 +1,174 @@
+#include <QDebug>
+#include <QTimer>
+#include <QStringList>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include "dockereventstream.h"
 
 DockerEventStream::DockerEventStream(QObject *parent)
     : QObject{parent}
 {
-    // Connect onStartError to QProcess errorOccured
+    connect(&proc, &QProcess::errorOccurred, this, &DockerEventStream::onStartError);
+    connect(&proc, &QProcess::finished, this, &DockerEventStream::onUnexpectedError);
+    connect(&proc, &QProcess::readyReadStandardError, this, &DockerEventStream::onErrorMessage);
+    connect(&proc, &QProcess::readyReadStandardOutput, this, &DockerEventStream::onEventDetected);
 
-    // Connect onUnexpectedError to QProcess finished
-
-    // Connect onErrorMessage to QProcess ready stderr output
-
-    // Connect onEventDetected to QProcess ready stdout output
-
-    // Run restart to initiate process
+    restart();
 }
 
 DockerEventStream::~DockerEventStream() {
+    proc.disconnect(this);
     m_attempt_restart = false;
-    stop();
+    if (proc.state() == QProcess::Running) {
+        qWarning() << "~DockerEventStream: QProcess was not finished. Forcing kill.";
+        proc.kill();
+    }
 }
 
 bool DockerEventStream::isActive(){
-    // Check QProcess to see if it's active
+    return proc.state() == QProcess::Running;
+}
+
+std::optional<DockerEvent> DockerEventStream::parseDockerEvent(const QByteArray &rawLine) {
+    QJsonParseError jsonParseError;
+    QJsonDocument doc = QJsonDocument::fromJson(rawLine, &jsonParseError);
+
+    if (jsonParseError.error != QJsonParseError::NoError) {
+        qWarning() << "parseDockerEvent: Error parsing JSON stream line.\n"
+                   << "Raw Data:" << rawLine << "\n"
+                   << "Error:" << jsonParseError.errorString();
+        return std::nullopt;
+    }
+
+    QJsonObject obj = doc.object();
+    if (obj.isEmpty()) {
+        qWarning() << "parseDockerEvent: Parsed successfully but payload is not a JSON Object.";
+        return std::nullopt;
+    }
+
+    QJsonValue containerIdVal = obj.value("container_id");
+    QJsonValue actionVal = obj.value("action");
+
+    if (containerIdVal.isUndefined() || actionVal.isUndefined()) {
+        qWarning() << "parseDockerEvent: Required keys missing from stream JSON context.";
+        return std::nullopt;
+    }
+
+    QString actionStr = actionVal.toString();
+    DockerEvent::Action action = DockerEvent::actionFromString(actionStr);
+
+    if (action == DockerEvent::Action::Unknown) {
+        qWarning() << "parseDockerEvent: Received safe unhandled action type:" << actionStr;
+    }
+
+    return DockerEvent{
+        action,
+        containerIdVal.toString()
+    };
+}
+
+void DockerEventStream::handleErrors() {
+    if (m_consecutive_errors < 0) {
+        m_consecutive_errors = 1;
+    } else {
+        m_consecutive_errors++;
+    }
+
+    if (m_attempt_restart && m_consecutive_errors <= 3) {
+        qWarning() << "handleErrors: Attempting automatic restart" << m_consecutive_errors << "of 3.";
+
+        // [SENIOR OBSERVATION:] We must not call restart() directly here! If the Docker daemon is down,
+        // calling restart() immediately will instantly fail, triggering handleErrors() again.
+        // This causes an infinite recursion loop that will crash the app with a Stack Overflow.
+        // Using QTimer::singleShot provides a non-blocking Exponential Backoff delay.
+        int delayMs = 1000 * m_consecutive_errors;
+        QTimer::singleShot(delayMs, this, &DockerEventStream::restart);}
+    else {
+        qCritical() << "handleErrors: Attempted to start event listener too many times. Giving up.";
+        abort();
+        emit criticalError();
+    }
 }
 
 void DockerEventStream::onStartError(QProcess::ProcessError error) {
-    // (TODO: move to dedicated function to share with onUnexpectedError)
-    // Increment the fail counter (if it's less than 0 then set it to 1)
-    // If it's less than or equal to 3 and attempt_restart is true, try calling .restart() and log the attempt
-    // Else set attempt_restart to false, log and emit criticalStreamError
+    qWarning() << "onStartError: Docker Events process could not be started.";
+    handleErrors();
 }
 
 void DockerEventStream::onUnexpectedError(int exitCode, QProcess::ExitStatus exitStatus) {
-    // (TODO: move to dedicated function to share with onStartError)
-    // Increment the fail counter (if it's less than 0 then set it to 1)
-    // If it's less than or equal to 3 and attempt_restart is true, try calling .restart() and log the attempt
-    // Else set attempt_restart to false, log and emit criticalStreamError
+    if (m_attempt_restart) {
+        qWarning() << "onUnexpectedError: Docker Events exited unexpectedly. Code:" << exitCode << "Status:" << exitStatus;
+        handleErrors();
+    }
 }
 
 void DockerEventStream::onErrorMessage() {
-    // Read std error
+    QByteArray errorOutput = proc.readAllStandardError();
 
-    // Log error
-
-    // Won't attempt to restart anything
+    qWarning() << "Docker Event Stream Stderr:" << errorOutput.trimmed();
 }
 
 void DockerEventStream::onEventDetected() {
-    // Read standard output
+    // [SENIOR OBSERVATION:] Because docker events is a continuous stream, readAllStandardOutput()
+    // might occasionally grab half of a JSON string if the OS buffer flushes mid-write.
+    // Using canReadLine() ensures we only parse fully completed lines ending in '\n'.
+    while (proc.canReadLine()) {
+        QByteArray rawLine = proc.readLine();
 
-    // Parse JSON
+        bool parseSuccess = false;
 
-    // If it fails (always log) and consecutive error count is greater than 3, set attempt_restart to false and emit critical error
-    // Otherwise, ignore missed event and early return.
 
-    // If success, reset error count (if a parse was successful we're sure it's healthy) and store parsed value
+        if (auto event = parseDockerEvent(rawLine)) {
+            // if a parse was successful, we're sure it's healthy
+            m_consecutive_errors = 0;
 
-    // Emit eventReceived with parsed value
-}
+            emit eventReceived(*event);
+            continue;
+        }
 
-void DockerEventStream::stop() {
+        qWarning() << "onEventDetected (attempt " % QString::number(m_consecutive_errors+1) %  "): Failed to parse JSON event line:" << rawLine.trimmed();
+
+        if (m_consecutive_errors > 3) {
+            qCritical() << "onEventDetected: Too many bad parses in a row. Stream unstable.";
+            abort();
+            emit criticalError();
+            return;
+        }
+
+        ++m_consecutive_errors;
+    }}
+
+void DockerEventStream::abort() {
     m_attempt_restart = false;
 
     if (proc.state() == QProcess::Running) {
+        qInfo() << "abort: Gracefully terminating Docker Events stream...";
         proc.terminate();
 
-        if (! proc.waitForFinished(3000)) {
+        if (!proc.waitForFinished(3000)) {
+            qWarning() << "abort: Stream did not close gracefully within 3s. Forcing kill.";
             proc.kill();
         }
     }
 }
 
+/**
+ * Triggers auto restart behavior! Check onUnexpectedError and onStartError
+ */
 void DockerEventStream::restart() {
-    // Stop process if it's running
+    if (proc.state() != QProcess::NotRunning) {
+        abort();
+    }
+    m_attempt_restart = true;
 
-    // Set keepAlive to true
+    qInfo() << "restart: Initializing Docker Events stream...";
 
-    // Run proper docker events command
-
-    // // Triggers auto restart behavior, check onUnexpectedError and onStartError
+    QStringList arguments = {
+        "events",
+        "--format",
+        "{\"action\":{{json .Action}},\"container_id\":{{json .Actor.ID}}}",
+        "--filter",
+        "Type=container"
+    };
+    proc.start("docker", arguments, QProcess::ReadOnly);
 }

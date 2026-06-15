@@ -1,6 +1,6 @@
 #include "dockerevent.h"
 
-DockerEvent::Action DockerEvent::containerActionFromString(QStringView str) {
+DockerEvent::Action DockerEvent::actionFromString(QStringView str) {
     if (str.compare(u"die", Qt::CaseInsensitive) == 0)
         return Action::Die;
     if (str.compare(u"start", Qt::CaseInsensitive) == 0)
@@ -11,6 +11,8 @@ DockerEvent::Action DockerEvent::containerActionFromString(QStringView str) {
         return Action::Pause;
     if (str.compare(u"unpause", Qt::CaseInsensitive) == 0)
         return Action::Unpause;
+    if (str.compare(u"kill", Qt::CaseInsensitive) == 0)
+        return Action::Kill;
 
     return Action::Unknown;
 }
@@ -26,6 +28,8 @@ QString DockerEvent::containerActionToString(Action action) {
         return "pause";
     if (action == Action::Unpause)
         return "unpause";
+    if (action == Action::Kill)
+        return "kill";
 
     return "unknown";
 }

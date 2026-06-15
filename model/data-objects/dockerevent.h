@@ -14,9 +14,10 @@ public:
         Stop,
         Unpause,
         Unknown,
+        Kill,
     };
 
-    static Action containerActionFromString(QStringView str);
+    static Action actionFromString(QStringView str);
 
     static QString containerActionToString(Action action);
 private:
