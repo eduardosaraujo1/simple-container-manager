@@ -21,8 +21,6 @@ private:
     // logger. After that, the application does not care what went wrong, it should just display
     // error message to the user guiding him to send the logs to the system admin.
     static std::optional<ContainerInfo> parseContainerInfo(const QByteArray &rawData);
-
-    static std::optional<QJsonObject> parseJsonObject(const QByteArray &rawData) ;
 public:
     explicit DockerCLI(QObject *parent = nullptr);
 

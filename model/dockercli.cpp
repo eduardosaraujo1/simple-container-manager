@@ -79,41 +79,8 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
 }
 
 std::optional<ContainerInfo> DockerCLI::parseContainerInfo(const QByteArray &rawData) {
-
-    QJsonObject obj;
-    {
-        auto parseResult = DockerCLI::parseJsonObject(rawData);
-        if (! parseResult) return std::nullopt;
-        obj = std::move(*parseResult);
-    }
-
-    if (! (obj.contains("id")
-          && obj.contains("name")
-          && obj.contains("status")
-          )) {
-        qWarning() << "parseContainerInfoString: JSON parsed succcessfilly but does not have the required keys. Raw Data:\n"
-                   << rawData;
-        return std::nullopt;
-    }
-
-    const ContainerInfo::Status status
-        = ContainerInfo::statusFromString(obj.value("status").toString());
-
-    if (status == ContainerInfo::Status::Unknown) {
-        qWarning() << "parseContainerInfoString: Status \""
-                   << obj.value("status").toString() << "\" could not be identified. Defaulting to Status::Unknown";
-    }
-
-    return ContainerInfo{
-        obj.value("id").toString(),
-        obj.value("name").toString(),
-        status
-    };
-}
-
-std::optional<QJsonObject> DockerCLI::parseJsonObject(const QByteArray &rawData) {
     QJsonParseError jsonParseError;
-    QJsonDocument doc = QJsonDocument::fromJson(rawData, &jsonParseError);
+    const QJsonDocument doc = QJsonDocument::fromJson(rawData, &jsonParseError);
 
     if (jsonParseError.error != QJsonParseError::NoError) {
         qWarning() << "parseJsonObject: Error when parsing JSON output. Raw Data: \n"
@@ -123,10 +90,37 @@ std::optional<QJsonObject> DockerCLI::parseJsonObject(const QByteArray &rawData)
     }
 
     if (! doc.isObject()) {
-        qWarning() << "parseJsonObject: JSON parsed succcessfilly, but not as valid object. Raw Data: \n"
+        qWarning() << "parseJsonObject: JSON parsed succcessfully, but not as valid object. Raw Data: \n"
                    << rawData;
         return std::nullopt;
     }
 
-    return doc.object();
+    const QJsonObject obj = doc.object();
+    const QJsonValue id = obj.value("id");
+    const QJsonValue name = obj.value("name");
+    const QJsonValue status = obj.value("status");
+
+    if (
+        id.isUndefined()
+        || name.isUndefined()
+        || status.isUndefined()
+        ) {
+        qWarning() << "parseContainerInfoString: JSON parsed succcessfully but does not have the required keys. Raw Data:\n"
+                   << rawData;
+        return std::nullopt;
+    }
+
+    const ContainerInfo::Status statusEnum
+        = ContainerInfo::statusFromString(status.toString());
+
+    if (statusEnum == ContainerInfo::Status::Unknown) {
+        qWarning() << "parseContainerInfoString: Status \""
+                   << status.toString() << "\" could not be identified. Defaulting to Status::Unknown";
+    }
+
+    return ContainerInfo{
+        id.toString(),
+        name.toString(),
+        statusEnum
+    };
 }
