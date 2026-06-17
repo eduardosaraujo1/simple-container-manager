@@ -16,6 +16,11 @@ class DockerCLI : public QObject
 public:
     explicit DockerCLI(QObject *parent = nullptr);
     ~DockerCLI();
+    /**
+     * @brief Starts the container read process and notifies the result
+     *
+     * Once the result is available, the signal `containersUpdated` is emitted.
+     */
     void requestContainerRefresh(const QStringList &namesFilter);
 private:
     QProcess m_proc{this};

@@ -16,10 +16,6 @@ DockerCLI::~DockerCLI() {
     }
 }
 
-/**
- * @brief Start container read m_process; emits containersUpdated signal when read is finished.
- * @param namesFilter Filters which containers should be used by name
- */
 void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
     QStringList arguments{
         "ps",
@@ -49,7 +45,6 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
         return;
     }
 
-    // Parse stdout into string in order to remove newline characters and parse each individually
     const QByteArray output = m_proc.readAllStandardOutput();
     const QList<QByteArray> lines = output.split('\n');
 

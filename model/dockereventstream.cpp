@@ -110,10 +110,6 @@ void DockerEventStream::handleErrors() {
     if (m_attempt_restart && m_consecutive_errors <= 3) {
         qWarning() << "handleErrors: Attempting automatic restart" << m_consecutive_errors << "of 3.";
 
-        // [SENIOR OBSERVATION:] We must not call restart() directly here! If the Docker daemon is down,
-        // calling restart() immediately will instantly fail, triggering handleErrors() again.
-        // This causes an infinite recursion loop that will crash the app with a Stack Overflow.
-        // Using QTimer::singleShot provides a non-blocking Exponential Backoff delay.
         const int delayMs = 1000 * m_consecutive_errors;
         QTimer::singleShot(delayMs, this, &DockerEventStream::restart);}
     else {
@@ -147,6 +143,7 @@ void DockerEventStream::onEventDetected() {
     // [SENIOR OBSERVATION:] Because docker events is a continuous stream, readAllStandardOutput()
     // might occasionally grab half of a JSON string if the OS buffer flushes mid-write.
     // Using canReadLine() ensures we only parse fully completed lines ending in '\n'.
+    // (before this revision we used .readyStandardOutput and .readAllStandardOutput())
     while (m_proc.canReadLine()) {
         const QByteArray rawLine = m_proc.readLine();
 
