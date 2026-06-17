@@ -3,21 +3,21 @@
 #include <QJsonDocument>
 
 DockerCLI::DockerCLI(QObject *parent) : QObject(parent) {
-    QObject::connect(&proc, &QProcess::finished, this, &DockerCLI::onProcessDone);
+    QObject::connect(&m_proc, &QProcess::finished, this, &DockerCLI::onProcessDone);
 }
 
 DockerCLI::~DockerCLI() {
-    if (proc.state() == QProcess::Running) {
-        proc.terminate();
+    if (m_proc.state() == QProcess::Running) {
+        m_proc.terminate();
 
-        if (! proc.waitForFinished(3000)) {
-            proc.kill();
+        if (! m_proc.waitForFinished(3000)) {
+            m_proc.kill();
         }
     }
 }
 
 /**
- * @brief Start container read process; emits containersUpdated signal when read is finished.
+ * @brief Start container read m_process; emits containersUpdated signal when read is finished.
  * @param namesFilter Filters which containers should be used by name
  */
 void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
@@ -29,7 +29,7 @@ void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
         "{\"id\":{{json .ID}},\"name\":{{json .Names}},\"status\":{{json .State}}}"
     };
 
-    if (proc.state() != QProcess::NotRunning) {
+    if (m_proc.state() != QProcess::NotRunning) {
         qWarning() << "requestContainerRefresh: previous query is still running. Dropping request.";
         return;
     }
@@ -39,18 +39,18 @@ void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
         arguments << "name="%name;
     }
 
-    proc.start("docker", arguments);
+    m_proc.start("docker", arguments);
 }
 
 void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     if (exitCode != 0 || status == QProcess::ExitStatus::CrashExit) {
         qCritical() << "onProcessDone: unexpected error occurred when querying containers. Exit code:" << exitCode
-                   << ".\nError output:\n" << proc.readAllStandardError();
+                   << ".\nError output:\n" << m_proc.readAllStandardError();
         return;
     }
 
     // Parse stdout into string in order to remove newline characters and parse each individually
-    const QByteArray output = proc.readAllStandardOutput();
+    const QByteArray output = m_proc.readAllStandardOutput();
     const QList<QByteArray> lines = output.split('\n');
 
     bool hasErrors = false;

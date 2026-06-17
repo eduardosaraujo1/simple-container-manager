@@ -13,26 +13,18 @@
 class DockerCLI : public QObject
 {
     Q_OBJECT
-private:
-    QProcess proc{this};
-
-    // I considered making `success` an enum or a proper `Exception` here. However,
-    // decided against it because if an error happens here it should go to the
-    // logger. After that, the application does not care what went wrong, it should just display
-    // error message to the user guiding him to send the logs to the system admin.
-    static std::optional<ContainerInfo> parseContainerInfo(const QByteArray &rawData);
 public:
     explicit DockerCLI(QObject *parent = nullptr);
-
     ~DockerCLI();
-
     void requestContainerRefresh(const QStringList &namesFilter);
-signals:
-    void containersUpdated(const QList<ContainerInfo> &containers);
-
-    void parseErrorOccurred();
+private:
+    QProcess m_proc{this};
+    static std::optional<ContainerInfo> parseContainerInfo(const QByteArray &rawData);
 private slots:
     void onProcessDone(int exitCode, QProcess::ExitStatus status);
+signals:
+    void containersUpdated(const QList<ContainerInfo> &containers);
+    void parseErrorOccurred();
 };
 
 #endif // DOCKERCLI_H

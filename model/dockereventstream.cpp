@@ -8,25 +8,58 @@
 DockerEventStream::DockerEventStream(QObject *parent)
     : QObject{parent}
 {
-    connect(&proc, &QProcess::errorOccurred, this, &DockerEventStream::onStartError);
-    connect(&proc, &QProcess::finished, this, &DockerEventStream::onUnexpectedError);
-    connect(&proc, &QProcess::readyReadStandardError, this, &DockerEventStream::onErrorMessage);
-    connect(&proc, &QProcess::readyReadStandardOutput, this, &DockerEventStream::onEventDetected);
+    connect(&m_proc, &QProcess::errorOccurred, this, &DockerEventStream::onStartError);
+    connect(&m_proc, &QProcess::finished, this, &DockerEventStream::onUnexpectedError);
+    connect(&m_proc, &QProcess::readyReadStandardError, this, &DockerEventStream::onErrorMessage);
+    connect(&m_proc, &QProcess::readyReadStandardOutput, this, &DockerEventStream::onEventDetected);
 
     restart();
 }
 
 DockerEventStream::~DockerEventStream() {
-    proc.disconnect(this);
+    m_proc.disconnect(this);
     m_attempt_restart = false;
-    if (proc.state() == QProcess::Running) {
+    if (m_proc.state() == QProcess::Running) {
         qWarning() << "~DockerEventStream: QProcess was not finished. Forcing kill.";
-        proc.kill();
+        m_proc.kill();
     }
 }
 
 bool DockerEventStream::isActive(){
-    return proc.state() == QProcess::Running;
+    return m_proc.state() == QProcess::Running;
+}
+
+void DockerEventStream::abort() {
+    m_attempt_restart = false;
+
+    if (m_proc.state() == QProcess::Running) {
+        qInfo() << "abort: Gracefully terminating Docker Events stream...";
+        m_proc.terminate();
+
+        if (!m_proc.waitForFinished(3000)) {
+            qWarning() << "abort: Stream did not close gracefully within 3s. Forcing kill.";
+            m_proc.kill();
+        }
+    }
+}
+
+void DockerEventStream::restart() {
+    if (m_proc.state() != QProcess::NotRunning) {
+        abort();
+    }
+    m_attempt_restart = true;
+
+    qInfo() << "restart: Initializing Docker Events stream...";
+
+    QStringList arguments = {
+        "events",
+        "--format",
+        "{\"action\":{{json .Action}},\"container_id\":{{json .Actor.ID}}}",
+        "--filter",
+        "Type=container"
+    };
+    m_proc.start("docker", arguments, QProcess::ReadOnly);
+    // if you're reading this, also check out error handling functions
 }
 
 std::optional<DockerEvent> DockerEventStream::parseDockerEvent(const QByteArray &rawLine) {
@@ -46,24 +79,24 @@ std::optional<DockerEvent> DockerEventStream::parseDockerEvent(const QByteArray 
         return std::nullopt;
     }
 
-    const QJsonValue containerIdVal = obj.value("container_id");
-    const QJsonValue actionVal = obj.value("action");
+    const QJsonValue containerId = obj.value("container_id");
+    const QJsonValue action = obj.value("action");
 
-    if (containerIdVal.isUndefined() || actionVal.isUndefined()) {
+    if (containerId.isUndefined() || action.isUndefined()) {
         qWarning() << "parseDockerEvent: Required keys missing from stream JSON context.";
         return std::nullopt;
     }
 
-    const QString actionStr = actionVal.toString();
-    const DockerEvent::Action action = DockerEvent::actionFromString(actionStr);
+    const QString actionStr = action.toString();
+    const DockerEvent::Action actionEnum = DockerEvent::actionFromString(actionStr);
 
-    if (action == DockerEvent::Action::Unknown) {
+    if (actionEnum == DockerEvent::Action::Unknown) {
         qWarning() << "parseDockerEvent: Received safe unhandled action type:" << actionStr;
     }
 
     return DockerEvent{
-        action,
-        containerIdVal.toString()
+        actionEnum,
+        containerId.toString()
     };
 }
 
@@ -92,7 +125,7 @@ void DockerEventStream::handleErrors() {
 
 void DockerEventStream::onStartError(QProcess::ProcessError error) {
     if (m_attempt_restart) {
-        qWarning() << "onStartError: Docker Events process could not be started.";
+        qWarning() << "onStartError: Docker Events m_process could not be started.";
         handleErrors();
     }
 }
@@ -105,7 +138,7 @@ void DockerEventStream::onUnexpectedError(int exitCode, QProcess::ExitStatus exi
 }
 
 void DockerEventStream::onErrorMessage() {
-    const QByteArray errorOutput = proc.readAllStandardError();
+    const QByteArray errorOutput = m_proc.readAllStandardError();
 
     qWarning() << "Docker Event Stream Stderr:" << errorOutput.trimmed();
 }
@@ -114,8 +147,8 @@ void DockerEventStream::onEventDetected() {
     // [SENIOR OBSERVATION:] Because docker events is a continuous stream, readAllStandardOutput()
     // might occasionally grab half of a JSON string if the OS buffer flushes mid-write.
     // Using canReadLine() ensures we only parse fully completed lines ending in '\n'.
-    while (proc.canReadLine()) {
-        const QByteArray rawLine = proc.readLine();
+    while (m_proc.canReadLine()) {
+        const QByteArray rawLine = m_proc.readLine();
 
         if (auto event = parseDockerEvent(rawLine)) {
             // if a parse was successful, we're sure it's healthy
@@ -138,37 +171,3 @@ void DockerEventStream::onEventDetected() {
         ++m_consecutive_errors;
     }}
 
-void DockerEventStream::abort() {
-    m_attempt_restart = false;
-
-    if (proc.state() == QProcess::Running) {
-        qInfo() << "abort: Gracefully terminating Docker Events stream...";
-        proc.terminate();
-
-        if (!proc.waitForFinished(3000)) {
-            qWarning() << "abort: Stream did not close gracefully within 3s. Forcing kill.";
-            proc.kill();
-        }
-    }
-}
-
-/**
- * Triggers auto restart behavior! Check onUnexpectedError and onStartError
- */
-void DockerEventStream::restart() {
-    if (proc.state() != QProcess::NotRunning) {
-        abort();
-    }
-    m_attempt_restart = true;
-
-    qInfo() << "restart: Initializing Docker Events stream...";
-
-    QStringList arguments = {
-        "events",
-        "--format",
-        "{\"action\":{{json .Action}},\"container_id\":{{json .Actor.ID}}}",
-        "--filter",
-        "Type=container"
-    };
-    proc.start("docker", arguments, QProcess::ReadOnly);
-}
