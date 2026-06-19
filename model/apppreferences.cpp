@@ -1,5 +1,19 @@
 #include "apppreferences.h"
 
+QString AppPreferences::defaultConfig = "containers:\n"
+           "#  - name: php8.2-apache\n"
+           "#    label: Apache com PHP\n"
+           "#  - name: oracle-xe-11g\n"
+           "#    label: Oracle Express 11g\n"
+           "#    action: $HOME/Scripts/oracle-11g-launch.sh\n"
+           "#  - name: postgresql\n"
+           "#    label: PostgreSQL\n"
+           "#    icon: /path/to/icon.svg\n"
+           "#  - name: mysql\n"
+           "#    label: MySQL 8.0\n"
+           "#    icon: /path/to/icon.svg\n"
+           "#    action: xdg-open http://localhost/phpmyadmin\n";
+
 AppPreferences::AppPreferences(QObject *parent)
     : QObject{parent}
 {
@@ -10,23 +24,20 @@ AppPreferences::AppPreferences(QObject *parent)
 
 void AppPreferences::refreshConfig() {
     QFile file(m_config_path);
-
-    if (! file.exists()) {
-        writeDefaultConfigs(file);
-        if (! file.exists()) {
-            qCritical() << "refreshConfig: file was not found even after template was written; emitting crash signal.";
-            emit criticalError();
-        }
-    }
-
     YAML::Node rootNode;
-    {
-        auto rootNodeResult = readYAMLFile(file);
-        if (! rootNodeResult.has_value()) {
+
+    if (file.exists()) {
+        if (auto result = readYAMLFile(file)) {
+            rootNode = result.value();
+        } else {
             qCritical() << "refreshConfig: failed to read config yaml file; emitting crash signal";
             emit criticalError();
+            return;
         }
-        rootNode = std::move(*rootNodeResult);
+    } else {
+        qWarning() << "refreshConfig: preferences.yaml was not found; attempting to write default file";
+        writeConfigFile(AppPreferences::defaultConfig); // writeConfigFile is a public slot, so is refreshConfig. Will it block the main event loop?
+        rootNode = YAML::LoadAll(AppPreferences::defaultConfig.toStdString());
     }
 
     // Note for future self (remove in production): if this fails, it should still emit "preferencesUpdated".
@@ -36,24 +47,21 @@ void AppPreferences::refreshConfig() {
     emit preferencesUpdated();
 }
 
-void AppPreferences::writeDefaultConfigs(QFile &file) const {
-    // Figure out how YamlDocument will represent arrays (`containers:`) and write the template
-    /*
-    containers:
-      - name: mysql
-        label: MySQL 8.0
-        icon: /path/to/icon.svg
-        action: xdg-open http://localhost/phpmyadmin
-      - name: oracle-xe-11g
-        label: Oracle Express 11g
-        icon: /path/to/icon.svg
-      - name: php8.2-apache
-        label: Oracle Express 11g
-    */
+void AppPreferences::writeConfigFile(const QString& content) const {
+    // Please review: this is definitively incomplete, didn't handle
+    // if the folder doesn't exist, or log anything, or if this is the proepr syntax
+    // for overriding file contents
+    QFile file(m_config_path);
+
+    if (! file.open(QFile::OpenModeFlag::ReadWrite))
+        return;
+
+    file.write(content.toUtf8());
+    file.close();
 }
 
 std::optional<YAML::Node> AppPreferences::readYAMLFile(QFile &file) const {
-    // Parse file
+    // Parse file into YAML Node
 
     // (somehow) ensure its integrity
 

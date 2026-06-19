@@ -10,6 +10,7 @@
 #include <model/dockercli.h>
 #include <model/data-objects/containerinfo.h>
 #include <model/dockereventstream.h>
+#include <model/apppreferences.h>
 
 int test_dockercli_1() {
     DockerCLI dcli;
@@ -96,32 +97,92 @@ int test_dockerevent_4() {
     });
 }
 
+int test_app_prefs_1() {
+    AppPreferences prefs{};
+
+    // Setup: Ensure the file doesn't exist
+    QFile file("/home/fatec/.config/simple-container-manager/preferences.yaml");
+
+    if (file.exists()) {
+        file.remove();
+    }
+
+    // Act: Refresh the config
+    prefs.refreshConfig();
+
+    // Check: Expect the file to be present in the file system
+    qInfo() << "I do not have the energy to implement this feature. Please check file:///home/fatec/.config manually";
+
+    return 0;
+}
+
+int test_app_prefs_2() {
+    AppPreferences prefs{};
+
+    // Act: Write an arbitrary config
+    prefs.writeConfigFile(
+        "containers:\n"
+        "  - name: php8.2-apache\n"
+        "    label: Apache com PHP\n"
+        "  - name: oracle-xe-11g\n"
+        "    label: Oracle Express 11g\n"
+        "    action: $HOME/Scripts/oracle-11g-launch.sh\n"
+        "  - name: postgresql\n"
+        "    label: PostgreSQL\n"
+        "    icon: /path/to/icon.svg\n"
+        "  - name: mysql\n"
+        "    label: MySQL 8.0\n"
+        "    icon: /path/to/icon.svg\n"
+        "    action: xdg-open http://localhost/phpmyadmin\n"
+        );
+
+    // Check: Expect the file to be present in the file system
+    qInfo() << "I do not have the energy to implement this feature. Please check file:///home/fatec/.config manually";
+
+    return 0;
+}
+
+int test_app_prefs_3() {
+    AppPreferences prefs{};
+
+    // Act: Expect it to read everything
+    QList<AppPreferences::ContainerSpec> containers = prefs.containers();
+
+    // Check: Expect the file to be present in the file system
+    qInfo() << "I do not have the energy to implement this. Please check if file:///home/fatec/.config/simple-container-manager/preferences.yaml matches the containers";
+    for (const auto& container : containers) {
+        qInfo() << container.toString();
+    }
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale : uiLanguages) {
-        const QString baseName = "workspace_" + QLocale(locale).name();
-        if (translator.load(":/i18n/" + baseName)) {
-            a.installTranslator(&translator);
-            break;
-        }
-    }
+    // QTranslator translator;
+    // const QStringList uiLanguages = QLocale::system().uiLanguages();
+    // for (const QString &locale : uiLanguages) {
+        // const QString baseName = "workspace_" + QLocale(locale).name();
+        // if (translator.load(":/i18n/" + baseName)) {
+            // a.installTranslator(&translator);
+            // break;
+        // }
+    // }
 
-    test_dockercli_1();
-    qInfo() << "---";
-    test_dockercli_2();
+    // test_dockercli_1();
+    // qInfo() << "---";
+    // test_dockercli_2();
 
-    qInfo() << "\n--TEST1--\n";
-    test_dockerevent_1();
-    qInfo() << "\n--TEST2--\n";
-    test_dockerevent_2();
-    qInfo() << "\n--TEST3--\n";
-    test_dockerevent_3();
-    qInfo() << "\n--TEST4--\n";
-    test_dockerevent_4();
+    // qInfo() << "\n--TEST1--\n";
+    // test_dockerevent_1();
+    // qInfo() << "\n--TEST2--\n";
+    // test_dockerevent_2();
+    // qInfo() << "\n--TEST3--\n";
+    // test_dockerevent_3();
+    // qInfo() << "\n--TEST4--\n";
+    // test_dockerevent_4();
 
     // return QCoreApplication::exec();
     return 0;

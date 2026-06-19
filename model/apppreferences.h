@@ -28,21 +28,23 @@ public:
         QString label;  // required
         QString icon;   // nullable
         QString action; // nullable
+
+        QString toString() const {
+            return "ContainerSpec[name=\"" % name % "\",label=\"" % label
+                   % "\",icon=\"" % icon % "\",action=\"" % action % "\"]";
+        }
     };
     explicit AppPreferences(QObject *parent = nullptr);
     ~AppPreferences() = default;
-    const QList<ContainerSpec>& containers() const { return m_containers; };
-    const QSet<QString>& names() const { return m_container_names; };
+    [[nodiscard]] const QList<ContainerSpec>& containers() const { return m_containers; };
+    [[nodiscard]] const QSet<QString>& names() const { return m_container_names; };
+    static QString defaultConfig;
 public slots:
     void refreshConfig();
-    // If YAML file does not exist, writeDefaultConfigs
-    // Read YAML file
-    // Store container preferences
-    // emit preferencesUpdated
+    void writeConfigFile(const QString& content) const;
 private:
-    void writeDefaultConfigs(QFile &file) const;
-    // Figure out how YamlDocument will represent arrays (`containers:`) and write the template
     std::optional<YAML::Node> readYAMLFile(QFile &file) const;
+    /** @brief storeContainerPreferences parses the YAML node for container preferences stores it internally through the cache. */
     void storeContainerPreferences(const YAML::Node &rootNode);
     //attributes
     QList<ContainerSpec> m_containers;
