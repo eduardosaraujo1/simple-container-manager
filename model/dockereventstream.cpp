@@ -1,8 +1,12 @@
+#include <QByteArray>
 #include <QDebug>
 #include <QTimer>
+#include <QString>
 #include <QStringList>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
+#include <optional>
 #include "dockereventstream.h"
 
 DockerEventStream::DockerEventStream(QObject *parent)
@@ -62,42 +66,44 @@ void DockerEventStream::restart() {
     // if you're reading this, also check out error handling functions
 }
 
-std::optional<DockerEvent> DockerEventStream::parseDockerEvent(const QByteArray &rawLine) {
-    QJsonParseError jsonParseError;
-    const QJsonDocument doc = QJsonDocument::fromJson(rawLine, &jsonParseError);
+namespace {
+    std::optional<DockerEvent> parseDockerEvent(const QByteArray &rawLine) {
+        QJsonParseError jsonParseError;
+        const QJsonDocument doc = QJsonDocument::fromJson(rawLine, &jsonParseError);
 
-    if (jsonParseError.error != QJsonParseError::NoError) {
-        qWarning() << "parseDockerEvent: Error parsing JSON stream line.\n"
-                   << "Raw Data:" << rawLine << "\n"
-                   << "Error:" << jsonParseError.errorString();
-        return std::nullopt;
+        if (jsonParseError.error != QJsonParseError::NoError) {
+            qWarning() << "parseDockerEvent: Error parsing JSON stream line.\n"
+                       << "Raw Data:" << rawLine << "\n"
+                       << "Error:" << jsonParseError.errorString();
+            return std::nullopt;
+        }
+
+        const QJsonObject obj = doc.object();
+        if (obj.isEmpty()) {
+            qWarning() << "parseDockerEvent: Parsed successfully but payload is not a JSON Object.";
+            return std::nullopt;
+        }
+
+        const QJsonValue containerId = obj.value("container_id");
+        const QJsonValue action = obj.value("action");
+
+        if (containerId.isUndefined() || action.isUndefined()) {
+            qWarning() << "parseDockerEvent: Required keys missing from stream JSON context.";
+            return std::nullopt;
+        }
+
+        const QString actionStr = action.toString();
+        const DockerEvent::Action actionEnum = DockerEvent::actionFromString(actionStr);
+
+        if (actionEnum == DockerEvent::Action::Unknown) {
+            qWarning() << "parseDockerEvent: Received safe unhandled action type:" << actionStr;
+        }
+
+        return DockerEvent{
+            actionEnum,
+            containerId.toString()
+        };
     }
-
-    const QJsonObject obj = doc.object();
-    if (obj.isEmpty()) {
-        qWarning() << "parseDockerEvent: Parsed successfully but payload is not a JSON Object.";
-        return std::nullopt;
-    }
-
-    const QJsonValue containerId = obj.value("container_id");
-    const QJsonValue action = obj.value("action");
-
-    if (containerId.isUndefined() || action.isUndefined()) {
-        qWarning() << "parseDockerEvent: Required keys missing from stream JSON context.";
-        return std::nullopt;
-    }
-
-    const QString actionStr = action.toString();
-    const DockerEvent::Action actionEnum = DockerEvent::actionFromString(actionStr);
-
-    if (actionEnum == DockerEvent::Action::Unknown) {
-        qWarning() << "parseDockerEvent: Received safe unhandled action type:" << actionStr;
-    }
-
-    return DockerEvent{
-        actionEnum,
-        containerId.toString()
-    };
 }
 
 void DockerEventStream::handleErrors() {

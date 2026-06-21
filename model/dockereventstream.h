@@ -1,11 +1,8 @@
 #ifndef DOCKEREVENTSTREAM_H
 #define DOCKEREVENTSTREAM_H
 
-#include <optional>
 #include <QObject>
-#include <QString>
 #include <QProcess>
-#include <QByteArray>
 #include <model/data-objects/dockerevent.h>
 
 class DockerEventStream : public QObject
@@ -24,7 +21,6 @@ private:
     int m_consecutive_errors = 0;
     bool m_attempt_restart = true;
     //assistent methods
-    std::optional<DockerEvent> parseDockerEvent(const QByteArray &rawLine);
     void handleErrors();
 private slots:
     void onStartError(QProcess::ProcessError error);

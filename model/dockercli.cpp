@@ -1,6 +1,59 @@
 #include "dockercli.h"
+#include <QByteArray>
+#include <QString>
+#include <QJsonObject>
 #include <QDebug>
 #include <QJsonDocument>
+#include <optional>
+
+namespace {
+    std::optional<ContainerInfo> parseContainerInfo(const QByteArray &rawData) {
+        QJsonParseError jsonParseError;
+        const QJsonDocument doc = QJsonDocument::fromJson(rawData, &jsonParseError);
+
+        if (jsonParseError.error != QJsonParseError::NoError) {
+            qWarning() << "parseJsonObject: Error when parsing JSON output. Raw Data: \n"
+                       << rawData << "\nError:"
+                       << jsonParseError.errorString();
+            return std::nullopt;
+        }
+
+        if (! doc.isObject()) {
+            qWarning() << "parseJsonObject: JSON parsed succcessfully, but not as valid object. Raw Data: \n"
+                       << rawData;
+            return std::nullopt;
+        }
+
+        const QJsonObject obj = doc.object();
+        const QJsonValue id = obj.value("id");
+        const QJsonValue name = obj.value("name");
+        const QJsonValue status = obj.value("status");
+
+        if (
+            id.isUndefined()
+            || name.isUndefined()
+            || status.isUndefined()
+            ) {
+            qWarning() << "parseContainerInfoString: JSON parsed succcessfully but does not have the required keys. Raw Data:\n"
+                       << rawData;
+            return std::nullopt;
+        }
+
+        const ContainerInfo::Status statusEnum
+            = ContainerInfo::statusFromString(status.toString());
+
+        if (statusEnum == ContainerInfo::Status::Unknown) {
+            qWarning() << "parseContainerInfoString: Status \""
+                       << status.toString() << "\" could not be identified. Defaulting to Status::Unknown";
+        }
+
+        return ContainerInfo{
+            id.toString(),
+            name.toString(),
+            statusEnum
+        };
+    }
+}
 
 DockerCLI::DockerCLI(QObject *parent) : QObject(parent) {
     QObject::connect(&m_proc, &QProcess::finished, this, &DockerCLI::onProcessDone);
@@ -71,51 +124,4 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     }
 
     emit this->containersUpdated(finalResult);
-}
-
-std::optional<ContainerInfo> DockerCLI::parseContainerInfo(const QByteArray &rawData) {
-    QJsonParseError jsonParseError;
-    const QJsonDocument doc = QJsonDocument::fromJson(rawData, &jsonParseError);
-
-    if (jsonParseError.error != QJsonParseError::NoError) {
-        qWarning() << "parseJsonObject: Error when parsing JSON output. Raw Data: \n"
-                   << rawData << "\nError:"
-                   << jsonParseError.errorString();
-        return std::nullopt;
-    }
-
-    if (! doc.isObject()) {
-        qWarning() << "parseJsonObject: JSON parsed succcessfully, but not as valid object. Raw Data: \n"
-                   << rawData;
-        return std::nullopt;
-    }
-
-    const QJsonObject obj = doc.object();
-    const QJsonValue id = obj.value("id");
-    const QJsonValue name = obj.value("name");
-    const QJsonValue status = obj.value("status");
-
-    if (
-        id.isUndefined()
-        || name.isUndefined()
-        || status.isUndefined()
-        ) {
-        qWarning() << "parseContainerInfoString: JSON parsed succcessfully but does not have the required keys. Raw Data:\n"
-                   << rawData;
-        return std::nullopt;
-    }
-
-    const ContainerInfo::Status statusEnum
-        = ContainerInfo::statusFromString(status.toString());
-
-    if (statusEnum == ContainerInfo::Status::Unknown) {
-        qWarning() << "parseContainerInfoString: Status \""
-                   << status.toString() << "\" could not be identified. Defaulting to Status::Unknown";
-    }
-
-    return ContainerInfo{
-        id.toString(),
-        name.toString(),
-        statusEnum
-    };
 }

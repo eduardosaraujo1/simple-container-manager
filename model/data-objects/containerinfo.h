@@ -1,7 +1,6 @@
 #ifndef CONTAINERINFO_H
 #define CONTAINERINFO_H
 
-#include <QJsonObject>
 #include <QString>
 
 class ContainerInfo
