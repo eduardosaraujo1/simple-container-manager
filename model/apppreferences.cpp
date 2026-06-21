@@ -1,4 +1,6 @@
 #include "apppreferences.h"
+#include <QFileInfo>
+#include <QDir>
 
 QString AppPreferences::defaultConfig = "containers:\n"
            "#  - name: php8.2-apache\n"
@@ -36,8 +38,8 @@ void AppPreferences::refreshConfig() {
         }
     } else {
         qWarning() << "refreshConfig: preferences.yaml was not found; attempting to write default file";
-        writeConfigFile(AppPreferences::defaultConfig); // writeConfigFile is a public slot, so is refreshConfig. Will it block the main event loop?
-        rootNode = YAML::LoadAll(AppPreferences::defaultConfig.toStdString());
+        writeConfigFile(AppPreferences::defaultConfig); // writeConfigFile is a public slot, so is refreshConfig. Will it block the UI event loop?
+        rootNode = YAML::Load(AppPreferences::defaultConfig.toStdString());
     }
 
     // Note for future self (remove in production): if this fails, it should still emit "preferencesUpdated".
@@ -48,15 +50,33 @@ void AppPreferences::refreshConfig() {
 }
 
 void AppPreferences::writeConfigFile(const QString& content) const {
-    // Please review: this is definitively incomplete, didn't handle
-    // if the folder doesn't exist, or log anything, or if this is the proepr syntax
-    // for overriding file contents
+    QFileInfo info(m_config_path);
+    QDir dir = info.dir();
+
+    if (! dir.exists()) {
+        bool success = dir.mkpath(".");
+        if (! success) {
+            qWarning() << "writeConfigFile: folder create operation (mkpath) failed; interrupting config file write process\n"
+                       << "Config path: " << m_config_path << "\n"
+                   << "Content: " << content;
+            return;
+        }
+    }
+
     QFile file(m_config_path);
 
-    if (! file.open(QFile::OpenModeFlag::ReadWrite))
+    if (! file.open(QFile::ReadWrite | QFile::Truncate)) {
+        qWarning() << "writeConfigFile: failed to open file resource for writing; interrupting config file write process\n"
+                   << "Config path: " << m_config_path << "\n"
+                   << "Content: " << content;
         return;
+    }
 
-    file.write(content.toUtf8());
+    if (file.write(content.toUtf8()) == -1) {
+        qWarning() << "writeConfigFile: failed to write config content to config file.\n"
+                   << "Config path: " << m_config_path;
+    }
+
     file.close();
 }
 
