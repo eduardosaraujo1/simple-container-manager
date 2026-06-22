@@ -4,12 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QSet>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QStandardPaths>
 #include <QFile>
-#include <optional>
 #include <yaml-cpp/yaml.h>
 
 /**
@@ -38,14 +33,14 @@ public:
     ~AppPreferences() = default;
     [[nodiscard]] const QList<ContainerSpec>& containers() const { return m_containers; };
     [[nodiscard]] const QSet<QString>& names() const { return m_container_names; };
-    static QString defaultConfig;
+    // ui developer: if you see this, remember to give the user a nice message if there are no containers
+    [[nodiscard]] const bool hasContainers() { return !m_containers.isEmpty(); }
 public slots:
     void refreshConfig();
-    void writeConfigFile(const QString& content) const;
 private:
-    std::optional<YAML::Node> readYAMLFile(QFile &file) const;
-    /** @brief storeContainerPreferences parses the YAML node for container preferences stores it internally through the cache. */
-    void storeContainerPreferences(const YAML::Node &rootNode);
+    static QString defaultConfig;
+    /** @brief parses the YAML node and stores container preferences in memory. */
+    void storeContainerPreferences(const YAML::Node &config);
     //attributes
     QList<ContainerSpec> m_containers;
     QSet<QString> m_container_names;

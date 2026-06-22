@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(workspace LANGUAGES CXX)
+project(simple-container-manager LANGUAGES CXX)
 
 include(FetchContent)
 
@@ -8,7 +8,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -25,7 +25,7 @@ FetchContent_MakeAvailable(yaml-cpp)
 
 set(TS_FILES workspace_pt_BR.ts)
 
-add_executable(workspace
+add_executable(containermanager
   main.cpp
   ${TS_FILES}
   model/dockercli.h model/dockercli.cpp
@@ -37,10 +37,10 @@ add_executable(workspace
 
 
 )
-target_link_libraries(workspace PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Test)
-target_link_libraries(workspace PRIVATE yaml-cpp)
+target_link_libraries(containermanager PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Test)
+target_link_libraries(containermanager PRIVATE yaml-cpp)
 
-target_include_directories(workspace PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(containermanager PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 if(COMMAND qt_create_translation)
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
@@ -49,7 +49,7 @@ else()
 endif()
 
 include(GNUInstallDirs)
-install(TARGETS workspace
+install(TARGETS containermanager
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

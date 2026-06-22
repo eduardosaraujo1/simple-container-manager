@@ -1,12 +1,13 @@
 #include <QCoreApplication>
-#include <QLocale>
-#include <QTranslator>
-#include <QProcess>
+// #include <QLocale>
+// #include <QTranslator>
 
+#include <QProcess>
 #include <QStringList>
 #include <QTimer>
 #include <QSignalSpy>
 #include <QString>
+#include <yaml-cpp/yaml.h>
 #include <model/dockercli.h>
 #include <model/data-objects/containerinfo.h>
 #include <model/dockereventstream.h>
@@ -100,11 +101,11 @@ int test_dockerevent_4() {
 int test_app_prefs_1() {
     AppPreferences prefs{};
 
-    // Setup: Ensure the file doesn't exist
-    QFile file("/home/fatec/.config/simple-container-manager/preferences.yaml");
+    // Setup: Ensure the folder doesn't exist
+    QDir dir("/home/fatec/.config/simple-container-manager/");
 
-    if (file.exists()) {
-        file.remove();
+    if (dir.exists()) {
+        dir.removeRecursively();
     }
 
     // Act: Refresh the config
@@ -119,22 +120,15 @@ int test_app_prefs_1() {
 int test_app_prefs_2() {
     AppPreferences prefs{};
 
-    // Act: Write an arbitrary config
-    prefs.writeConfigFile(
-        "containers:\n"
-        "  - name: php8.2-apache\n"
-        "    label: Apache com PHP\n"
-        "  - name: oracle-xe-11g\n"
-        "    label: Oracle Express 11g\n"
-        "    action: $HOME/Scripts/oracle-11g-launch.sh\n"
-        "  - name: postgresql\n"
-        "    label: PostgreSQL\n"
-        "    icon: /path/to/icon.svg\n"
-        "  - name: mysql\n"
-        "    label: MySQL 8.0\n"
-        "    icon: /path/to/icon.svg\n"
-        "    action: xdg-open http://localhost/phpmyadmin\n"
-        );
+    // Setup: Ensure the file doesn't exist
+    QFileInfo info("/home/fatec/.config/simple-container-manager/preferences.yaml");
+
+    if (info.exists()) {
+        QFile::remove(info.absoluteFilePath());
+    }
+
+    // Act: Refresh the config
+    prefs.refreshConfig();
 
     // Check: Expect the file to be present in the file system
     qInfo() << "I do not have the energy to implement this feature. Please check file:///home/fatec/.config manually";
@@ -159,7 +153,11 @@ int test_app_prefs_3() {
 
 int main(int argc, char *argv[])
 {
+    qDebug() << "Hello, world!A;";
+    return 0;
     QCoreApplication a(argc, argv);
+    QCoreApplication::setOrganizationName("SimpleContainerGroup");
+    QCoreApplication::setApplicationName("simple-container-manager");
 
     // QTranslator translator;
     // const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -171,18 +169,25 @@ int main(int argc, char *argv[])
         // }
     // }
 
-    test_dockercli_1();
-    qInfo() << "---";
-    test_dockercli_2();
+    // test_dockercli_1();
+    // qInfo() << "---";
+    // test_dockercli_2();
+
+    // qInfo() << "\n--TEST1--\n";
+    // test_dockerevent_1();
+    // qInfo() << "\n--TEST2--\n";
+    // test_dockerevent_2();
+    // qInfo() << "\n--TEST3--\n";
+    // test_dockerevent_3();
+    // qInfo() << "\n--TEST4--\n";
+    // test_dockerevent_4();
 
     qInfo() << "\n--TEST1--\n";
-    test_dockerevent_1();
-    qInfo() << "\n--TEST2--\n";
-    test_dockerevent_2();
-    qInfo() << "\n--TEST3--\n";
-    test_dockerevent_3();
-    qInfo() << "\n--TEST4--\n";
-    test_dockerevent_4();
+    test_app_prefs_1();
+    // qInfo() << "\n--TEST2--\n";
+    // test_app_prefs_2();
+    // qInfo() << "\n--TEST3--\n";
+    // test_app_prefs_3();
 
     // return QCoreApplication::exec();
     return 0;
