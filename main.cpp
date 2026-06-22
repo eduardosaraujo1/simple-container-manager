@@ -139,6 +139,8 @@ int test_app_prefs_2() {
 int test_app_prefs_3() {
     AppPreferences prefs{};
 
+    prefs.refreshConfig();
+
     // Act: Expect it to read everything
     QList<AppPreferences::ContainerSpec> containers = prefs.containers();
 
@@ -153,10 +155,7 @@ int test_app_prefs_3() {
 
 int main(int argc, char *argv[])
 {
-    qDebug() << "Hello, world!A;";
-    return 0;
     QCoreApplication a(argc, argv);
-    QCoreApplication::setOrganizationName("SimpleContainerGroup");
     QCoreApplication::setApplicationName("simple-container-manager");
 
     // QTranslator translator;
@@ -182,12 +181,12 @@ int main(int argc, char *argv[])
     // qInfo() << "\n--TEST4--\n";
     // test_dockerevent_4();
 
-    qInfo() << "\n--TEST1--\n";
-    test_app_prefs_1();
+    // qInfo() << "\n--TEST1--\n";
+    // test_app_prefs_1();
     // qInfo() << "\n--TEST2--\n";
     // test_app_prefs_2();
-    // qInfo() << "\n--TEST3--\n";
-    // test_app_prefs_3();
+    qInfo() << "\n--TEST3--\n";
+    test_app_prefs_3();
 
     // return QCoreApplication::exec();
     return 0;

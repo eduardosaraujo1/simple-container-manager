@@ -159,7 +159,6 @@ AppPreferences::AppPreferences(QObject *parent)
     m_config_path = QStandardPaths::writableLocation(
             QStandardPaths::AppConfigLocation)
         % "/preferences.yaml";
-    qDebug() << m_config_path;
 }
 
 void AppPreferences::refreshConfig() {
