@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
 project(simple-container-manager LANGUAGES CXX)
-
 include(FetchContent)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
@@ -21,6 +20,13 @@ qt_add_executable(simple-container-manager
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+
+    model/dockercli.h model/dockercli.cpp
+    model/data-objects/containerinfo.h model/data-objects/containerinfo.cpp
+
+    model/dockereventstream.h model/dockereventstream.cpp
+    model/data-objects/dockerevent.h model/data-objects/dockerevent.cpp
+    model/apppreferences.h model/apppreferences.cpp
 )
 
 target_link_libraries(simple-container-manager
@@ -28,6 +34,9 @@ target_link_libraries(simple-container-manager
         Qt::Core
         Qt::Widgets
 )
+target_link_libraries(simple-container-manager PRIVATE yaml-cpp)
+
+target_include_directories(simple-container-manager PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 install(TARGETS simple-container-manager
     BUNDLE  DESTINATION .
