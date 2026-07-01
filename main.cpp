@@ -204,7 +204,7 @@ int test_app_prefs_1() {
     }
 
     // Act: Refresh the config
-    prefs.refreshConfig();
+    prefs.readConfigFile();
 
     // Check: Expect the file to be present in the file system
     qInfo() << "I do not have the energy to implement this feature. Please check file:///home/fatec/.config manually";

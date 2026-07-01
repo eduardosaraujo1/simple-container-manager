@@ -33,11 +33,17 @@ public:
     [[nodiscard]] const bool hasContainers() { return !m_containers.isEmpty(); }
 public slots:
     /**
-     * @brief refreshConfig is used to read the file. uppon being called the class should emit either:
+     * @brief reads the config file and stores it in the application memory
+     *
+     * This function attempts to read the application config file and store its contents. If the file is not
+     * found, the required folders and a template placeholder is placed.
+     *
+     * Operations are asynchronous, and handled by the Qt Event Loop. Once they are complete, one
+     * of the following signals are emitted:
      * - preferencesUpdated()
      * - criticalError()
      */
-    void refreshConfig();
+    void readConfigFile();
 private:
     static QString defaultConfig;
     /** @brief parses the YAML node and stores container preferences in memory. */
