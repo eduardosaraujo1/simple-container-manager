@@ -1,7 +1,17 @@
 cmake_minimum_required(VERSION 3.19)
 project(simple-container-manager LANGUAGES CXX)
 
+include(FetchContent)
+
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+
+FetchContent_Declare(
+    yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG yaml-cpp-0.9.0
+)
+
+FetchContent_MakeAvailable(yaml-cpp)
 
 qt_standard_project_setup()
 
