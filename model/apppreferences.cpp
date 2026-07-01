@@ -161,7 +161,7 @@ AppPreferences::AppPreferences(QObject *parent)
         % "/preferences.yaml";
 }
 
-void AppPreferences::refreshConfig() {
+void AppPreferences::readConfigFile() {
     QFile file(m_config_path);
     YAML::Node rootNode;
 
@@ -169,12 +169,12 @@ void AppPreferences::refreshConfig() {
         if (auto result = readYAMLFile(file)) {
             rootNode = result.value();
         } else {
-            qCritical() << "refreshConfig: failed to read config yaml file; emitting crash signal";
+            qCritical() << "readConfigFile: failed to read config yaml file; emitting crash signal";
             emit criticalError();
             return;
         }
     } else {
-        qWarning() << "refreshConfig: preferences.yaml was not found; attempting to write default file";
+        qWarning() << "readConfigFile: preferences.yaml was not found; attempting to write default file";
         writeConfigFile(AppPreferences::defaultConfig, m_config_path);
         rootNode = YAML::Load(AppPreferences::defaultConfig.toStdString());
     }
