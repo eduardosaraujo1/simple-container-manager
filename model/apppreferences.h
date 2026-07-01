@@ -9,10 +9,6 @@
 
 /**
  * @brief The AppPreferences class allows the application to interface with preferences set by the user
- *
- * The method `refreshConfig` is used to read the file, uppon being called the class should emit either:
- * - preferencesUpdated()
- * - criticalError()
  */
 class AppPreferences : public QObject
 {
@@ -36,6 +32,11 @@ public:
     // ui developer: if you see this, remember to give the user a nice message if there are no containers
     [[nodiscard]] const bool hasContainers() { return !m_containers.isEmpty(); }
 public slots:
+    /**
+     * @brief refreshConfig is used to read the file. uppon being called the class should emit either:
+     * - preferencesUpdated()
+     * - criticalError()
+     */
     void refreshConfig();
 private:
     static QString defaultConfig;

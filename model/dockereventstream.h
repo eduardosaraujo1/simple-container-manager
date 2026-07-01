@@ -12,6 +12,7 @@ public:
     explicit DockerEventStream(QObject *parent = nullptr);
     ~DockerEventStream();
     bool isActive();
+    bool waitUntilActive();
 public slots:
     void restart();
     void abort();

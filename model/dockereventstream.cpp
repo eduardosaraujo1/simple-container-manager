@@ -33,6 +33,10 @@ bool DockerEventStream::isActive(){
     return m_proc.state() == QProcess::Running;
 }
 
+bool DockerEventStream::waitUntilActive() {
+    return isActive() || m_proc.waitForStarted(5000);
+}
+
 void DockerEventStream::abort() {
     m_attempt_restart = false;
 
@@ -155,7 +159,7 @@ void DockerEventStream::onEventDetected() {
 
         if (auto event = parseDockerEvent(rawLine)) {
             // if a parse was successful, we're sure it's healthy
-            qInfo() << "onEventDetected: successsfully captured docker Event";
+            qDebug() << "onEventDetected: successsfully captured docker Event";
             m_consecutive_errors = 0;
 
             emit eventReceived(*event);
@@ -172,5 +176,5 @@ void DockerEventStream::onEventDetected() {
         }
 
         ++m_consecutive_errors;
-    }}
-
+    }
+}

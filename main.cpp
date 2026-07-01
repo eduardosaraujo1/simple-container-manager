@@ -49,6 +49,101 @@ int test_dockercli_2() {
     return 0;
 }
 
+int test_dockercli_3() {
+    const QString containerId =  "73095f503db88226d7861d85852cad4aa6b029352b039ca31859b893d7a97dfb";
+    bool received = false;
+    DockerCLI dcli;
+    DockerEventStream des;
+    QEventLoop loop;
+    QTimer timeout;
+
+    des.waitUntilActive();
+    timeout.setSingleShot(true);
+
+    QObject::connect(&timeout, &QTimer::timeout,
+                     &loop, &QEventLoop::quit);
+
+    QObject::connect(
+        &des,
+        &DockerEventStream::eventReceived,
+        [&](const DockerEvent &event)
+        {
+            if (event.action() == DockerEvent::Action::Stop &&
+                event.containerId() == containerId)
+            {
+                received = true;
+                timeout.stop();
+                loop.quit();
+            }
+        });
+
+    timeout.start(10000);
+    dcli.stopContainer(containerId);
+
+    // Lock until the event has emitted or timeout has ran
+    loop.exec();
+
+    // Check
+    assert(received);
+    des.abort();
+    // Currently, there is a warning that a QProcess instance is destroyed before the process is terminated.
+    // It refers too the `docker start` QProcess, because the Start event triggers before the command finishes. And since the application (both
+    // in tests and in production) relies on said event to determine if it should refresh or not, the test suite cleans up before the instance has time to
+    // finish and teardown.
+    //
+    // This is not a problem: the process can be orphaned for a few milliseconds, as it terminates itself. Besides the log message in the console, no
+    // memory leaks occur (thanks to Qt's Object Hierarchy) and the behavior remains the same.
+
+    return 0;
+}
+int test_dockercli_4() {
+    const QString containerId =  "73095f503db88226d7861d85852cad4aa6b029352b039ca31859b893d7a97dfb";
+    bool received = false;
+    DockerCLI dcli;
+    DockerEventStream des;
+    QEventLoop loop;
+    QTimer timeout;
+
+    des.waitUntilActive();
+    timeout.setSingleShot(true);
+
+    QObject::connect(&timeout, &QTimer::timeout,
+                     &loop, &QEventLoop::quit);
+
+    QObject::connect(
+        &des,
+        &DockerEventStream::eventReceived,
+        [&](const DockerEvent &event)
+        {
+            if (event.action() == DockerEvent::Action::Start &&
+                event.containerId() == containerId)
+            {
+                received = true;
+                timeout.stop();
+                loop.quit();
+            }
+        });
+
+    timeout.start(10000);
+    dcli.startContainer(containerId);
+
+    loop.exec();
+
+    // Assert
+    assert(received);
+
+    // Cleanup
+    des.abort();
+    // Currently, there is a warning that a QProcess instance is destroyed before the process is terminated.
+    // It refers too the `docker start` QProcess, because the Start event triggers before the command finishes. And since the application (both
+    // in tests and in production) relies on said event to determine if it should refresh or not, the test suite cleans up before the instance has time to
+    // finish and teardown.
+    //
+    // This is not a problem: the process can be orphaned for a few milliseconds, as it terminates itself. Besides the log message in the console, no
+    // memory leaks occur (thanks to Qt's Object Hierarchy) and the behavior remains the same.
+    return 0;
+}
+
 int helper_dockerevent_layout(const QStringList &args) {
     DockerEventStream des;
     QSignalSpy spy(&des, &DockerEventStream::eventReceived);
@@ -56,7 +151,7 @@ int helper_dockerevent_layout(const QStringList &args) {
 
     QObject::connect(&des, &DockerEventStream::eventReceived, &des, [&des](DockerEvent event) {
         qInfo() << event.toString();
-        qInfo() << "---";;
+        qInfo() << "---";
     });
 
     proc.start("docker", args);
@@ -168,9 +263,14 @@ int main(int argc, char *argv[])
         // }
     // }
 
+    // qInfo() << "\n--TEST1--\n";
     // test_dockercli_1();
-    // qInfo() << "---";
+    // qInfo() << "\n--TEST2--\n";
     // test_dockercli_2();
+    qInfo() << "\n--TEST3--\n";
+    test_dockercli_3();
+    qInfo() << "\n--TEST4--\n";
+    test_dockercli_4();
 
     // qInfo() << "\n--TEST1--\n";
     // test_dockerevent_1();
@@ -185,8 +285,8 @@ int main(int argc, char *argv[])
     // test_app_prefs_1();
     // qInfo() << "\n--TEST2--\n";
     // test_app_prefs_2();
-    qInfo() << "\n--TEST3--\n";
-    test_app_prefs_3();
+    // qInfo() << "\n--TEST3--\n";
+    // test_app_prefs_3();
 
     // return QCoreApplication::exec();
     return 0;

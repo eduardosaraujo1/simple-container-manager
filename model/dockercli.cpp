@@ -125,3 +125,54 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
 
     emit this->containersUpdated(finalResult);
 }
+
+void DockerCLI::startContainer(const QString &containerId) {
+    QProcess *process = new QProcess(this);
+
+    QObject::connect(process, &QProcess::finished, this, [process](int exitCode, QProcess::ExitStatus exitStatus) {
+        if (exitCode != 0 || exitStatus == QProcess::ExitStatus::CrashExit) {
+            qCritical() << "startContainer: an unexpected error occurred.\nExit code:"
+                        << exitCode << ".\n"
+                        << "Error output:\n" << process->readAllStandardError() << ".\n"
+                        << "Standard output:\n" << process->readAllStandardOutput() << ".\n";
+            return;
+        }
+        process->deleteLater();
+    });
+
+    QObject::connect(process, &QProcess::errorOccurred, this, [process](QProcess::ProcessError)
+    {
+        qCritical() << "startContainer: unexpected error starting docker process: " << process->errorString();
+        process->deleteLater();
+    });
+
+    process->start("docker", {
+        "start",
+        containerId
+    });
+}
+
+void DockerCLI::stopContainer(const QString &containerId) {
+    QProcess *process = new QProcess(this);
+
+    QObject::connect(process, &QProcess::finished, this, [process](int exitCode, QProcess::ExitStatus exitStatus) {
+        if (exitCode != 0 || exitStatus == QProcess::ExitStatus::CrashExit) {
+            qCritical() << "stopContainer: an unexpected error occurred.\nExit code:"
+                        << exitCode << ".\n"
+                        << "Error output:\n" << process->readAllStandardError() << ".\n"
+                        << "Standard output:\n" << process->readAllStandardOutput() << ".\n";
+        }
+        process->deleteLater();
+    });
+
+    QObject::connect(process, &QProcess::errorOccurred, this, [process](QProcess::ProcessError)
+    {
+        qCritical() << "stopContainer: unexpected error starting docker process: " << process->errorString();
+        process->deleteLater();
+    });
+
+    process->start("docker", {
+        "stop",
+        containerId
+    });
+}

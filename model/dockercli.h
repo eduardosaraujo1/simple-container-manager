@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QProcess>
+#include <QString>
 #include <QStringList>
 #include <model/data-objects/containerinfo.h>
 
@@ -18,6 +19,9 @@ public:
      * Once the result is available, the signal `containersUpdated` is emitted.
      */
     void requestContainerRefresh(const QStringList &namesFilter);
+public slots:
+    void startContainer(const QString &containerId);
+    void stopContainer(const QString &containerId);
 private:
     QProcess m_proc{this};
 private slots:
