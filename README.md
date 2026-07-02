@@ -1,79 +1,144 @@
-# Introdução
+# Simple Container Manager
 
-[Docker Containers](https://www.docker.com/resources/what-container/) são ideais para a configuração de ambientes de desenvolvimento super flexíveis e estáveis, pois permitem desenvolver em diversas _stacks_ de desenvolvimento no mesmo sistema sem as complicações de instalar linguagens e bibliotecas diretamente na máquina raíz.
+Uma interface gráfica simples para gerenciamento de contêineres Docker voltada para ambientes educacionais e de desenvolvimento.
 
-Entretanto, a maior parte dos professores e mestres não fazem uso dessa tecnologia, e optam por instalar linguagens e bibliotecas no sistema principal, como o [XAMPP](https://www.apachefriends.org/pt_br/index.html), por exemplo, para ensinar essa ferramenta de desenvolvimento para seus alunos. A justificativa é complexidade: apesar de existirem ferramentas como [Docker Desktop](https://docs.docker.com/desktop/) e [Portainer](https://www.portainer.io/) que facilitam a gestão de Containers, a complexidade dessas ferramentas dificultam seu uso em um ambiente no qual conceitos fundamentais estão sendo ensinados.
+## Sobre o Projeto
 
-Com o objetivo de me familiarizar com o desenvolvimento de aplicações Desktop nativas e a necessidade de uma ferramenta simples para controle de contâiners de desenvolvimento, surge o **Simple Container Manager**: uma ferramenta que abstrai a gestão de contâiners em uma interface parecida com o [XAMPP](https://www.apachefriends.org/pt_br/index.html).
+O Docker permite criar ambientes de desenvolvimento flexíveis, reproduzíveis e isolados, evitando a instalação de linguagens, bibliotecas e serviços diretamente no sistema operacional.
 
-# Como Utilizar
+Apesar dessas vantagens, ferramentas de gerenciamento como Docker Desktop e Portainer podem ser excessivamente complexas para ambientes de ensino, especialmente quando o objetivo é introduzir conceitos básicos de programação e desenvolvimento web.
 
-1. Crie os contâiners necessários para desenvolvimento via Docker 2. Abra o aplicativo através da versão disponível na seção Releases ou compile usando cmake e Qt
-    - No momento, nenhuma build foi realizada ainda. Por isso nenhum arquivo BUILD.md será disponibilizado.
-3. Clique no botão "configurações" e ative os contâiners que deseja gerenciar, opcionalmente adicionando um nome customizado.
+O **Simple Container Manager** nasceu com dois objetivos:
 
-# Tecnologias
+- fornecer uma experiência semelhante ao XAMPP para gerenciamento de serviços;
+- servir como projeto de aprendizado em desenvolvimento de aplicações Desktop nativas utilizando C++ e Qt.
 
-Para esse projeto, com o intuito de treinar minha adaptabilidade a novas tecnologias, optei pelas seguintes tecnologias:
+## Como Funciona
 
-- **[Qt-Widgets](https://doc.qt.io/qt-6/topics-ui.html#qt-widgets-user-interfaces)** — Framework de desenvolvimento que abstrai a criação de janelas em ambientes Desktop. Diferente do [Qt-quick](https://doc.qt.io/qt-6/topics-graphics2d.html#qt-quick), a versão utilizada é centrada no desenvolvimento de aplicações Desktop com design simples.
-- **[Docker CLI](https://docs.docker.com/reference/cli/docker)** — Será utilizada a interface de linha de comando do Docker (CLI) para gerenciar e interagir com contêineres, imagens e demais recursos.
-- **[C++](https://pt.wikipedia.org/wiki/C%2B%2B)** — Linguagem de baixo nível com suporte a orientação a objetos.
+O Simple Container Manager não exibe todos os contêineres existentes no Docker Engine.
+
+Um arquivo de configuração define quais contêineres serão apresentados na interface, além de suas propriedades visuais:
+
+- nome interno do contêiner;
+- nome de exibição;
+- ícone opcional;
+- ação padrão.
+
+Isso permite que um administrador prepare um ambiente de desenvolvimento para estudantes sem exigir conhecimento prévio de Docker.
+
+## Funcionalidades
+
+- Exibição apenas de contêineres previamente configurados;
+- Inicialização e parada de aplicações com um clique;
+- Atualização automática de status utilizando eventos do Docker;
+- Configuração de nome amigável e ícone para cada aplicação;
+- Atualização manual da lista de aplicações e das configurações;
+- Visualização de logs em tempo real.
+
+## Capturas de Tela
+
+> Em desenvolvimento.
+
+## Instalação
+
+### Utilizando uma Release
+
+1. Baixe a versão mais recente na seção **Releases**.
+2. Execute o aplicativo.
+
+> Ainda não existem builds oficiais disponíveis.
+
+### Compilando o Projeto
+
+Pré-requisitos:
+
+- CMake;
+- Qt 6 (Widgets);
+- Docker CLI;
+- Compilador compatível com C++20 ou superior.
+
+```bash
+git clone <repositorio>
+cd simple-container-manager
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+## Uso
+
+1. Crie os contêineres necessários utilizando Docker.
+2. Abra o Simple Container Manager.
+3. Acesse a tela de configurações.
+4. Selecione os contêineres que deverão ser gerenciados.
+5. Opcionalmente, personalize nomes e ícones.
+
+## Documentação Técnica
 
 <details>
 
-<summary>Detalhes Técnicos</summary>
+<summary>Clique para expandir</summary>
 
+### Tecnologias Utilizadas
 
-# Requisitos Funcionais
+- **Qt Widgets** — Interface gráfica Desktop nativa.
+- **Docker CLI** — Comunicação com o Docker Engine por meio da linha de comando.
+- **C++** — Linguagem utilizada para implementação da aplicação.
 
-## Dicionário
+### Requisitos Funcionais
 
-- Administrador: usuário que realiza a instalação e configuração;
-- Desenvolvedor: usuário que usa simple-container-manager para executar código;
-- Aplicação: Docker Container marcado para ser exibido no simple-container-manager.
+#### RF1 – Seleção de Contêineres
 
-## RF1 - Seleção de contâiners para exibição
+O administrador pode definir quais contêineres serão exibidos pela aplicação, incluindo:
 
-**Descrição:** Por se tratar de uma interface de fácil uso, o sistema só deve listar alguns Docker Containers, mas não todos. Por isso, através do arquivo de configuração, o administrador poderá especificar o nome do contâiner, um ícone para exibição e uma label (etiqueta).
+- nome;
+- etiqueta (label);
+- ícone;
+- ação padrão.
 
-**Prioridade:** Must-Have
+**Prioridade:** Must Have.
 
-## RF2 - Gerenciar aplicações na tela inicial
+#### RF2 – Gerenciamento de Aplicações
 
-**Descrição:** Ao abrir o aplicativo, uma lista de todas as aplicações previamente configuradas devem estar disponíveis em forma de lista. Cada aplicação deve mostrar seu status atual (funcionando, parada, pausada ou desconhecida), e ter a opção de iniciar, 
+A tela principal deve exibir:
 
-## RF3 - Atualização de status de contâiner
+- etiqueta;
+- ícone;
+- status;
+- botões de iniciar, parar e reiniciar.
 
-**Descrição:** Para garantir sincronização entre a aplicação e o Docker Engine, a aplicação deve atualizar seu estado interno sempre que identificada uma alteração no status dos contâiners Docker. Além disso, a interface deve conter um botão "refresh" caso o mecanismo de atualização automática falhar.
+**Prioridade:** Must Have.
 
-**Prioridade:** Must-Have
+#### RF3 – Atualização de Status
+
+A aplicação deve manter sincronização com o Docker Engine utilizando eventos do Docker e oferecer atualização manual caso necessário.
+
+**Prioridade:** Should Have.
+
+#### RF4 – Exibição de Logs
+
+Os logs de uma aplicação poderão ser exibidos em uma janela dedicada em tempo real.
+
+**Prioridade:** Could Have.
 
 ### Casos de Uso
 
-1. listarAplicacoes
-2. ativarAplicacao
-3. desativarAplicacao
-4. recarregarAplicações
-5. recarregarConfiguracao
+1. Listar aplicações;
+2. Ativar aplicação;
+3. Desativar aplicação;
+4. Recarregar aplicações;
+5. Recarregar configurações.
 
-# Work in Progress: resumo do projeto que pode ser integrado à descrição
+# Roadmap
 
-The user is creating a Qt Widgets project using Qt Creator on a Linux Mint environment. He does not have much experience on C++, and this is his first project using Qt.
-
-The project is a tool inspired by the ease of use of XAMPP and the flexibility of container technology. A simple UI very similar to XAMPP which allows to list running containers that can be started or stopped, just like XAMPP services.
-
-To prevent unrelated containers from appearing in the UI, a containers-list.config.yaml file will exist to filter which containers should appear, what their display names should be, and (optionally) a display icon for those applications.
-
-The target user-base are system admins who want to use Docker as a base for the development environment of students, who won't have to know docker specifics in order to learn various technologies.
-
-Under the hood, the docker CLI is used with QProcess. `docker events` is used to react dynamically to container status updates. If the process is interrupted, the application will try to restart it as soon as possible. If it fails 3 times in a row then disable the process (requiring manual refreshes) and show the user an error.
+- [x] Definir escopo
+- [x] Criar camada de abstração para comunicação com docker (ativar e desativar container utilizando nome; equivalente de Stream para reagir a alterações de uma thread `docker events --format json`)
+- [ ] Criar Qt Model para representar o estado atual de cada container
+- [ ] Criar UI para exibir e controlar os containers
 
 </details>
 
-### Roadmap
+## Licença
 
-- [x] Definir escopo
-- [ ] Criar camada de abstração para comunicação com docker (ativar e desativar container utilizando nome; equivalente de Stream para reagir a alterações de uma thread `docker events --format json`)
-- [ ] Criar Qt Model para representar o estado atual de cada container
-- [ ] Criar UI para exibir e controlar os containers
+Ainda não definida.
