@@ -50,5 +50,5 @@ QString ContainerInfo::toString() const {
 }
 
 bool ContainerInfo::isValid() const {
-    return m_id.isEmpty();
+    return !(m_id.isEmpty() || m_name.isEmpty());
 }
