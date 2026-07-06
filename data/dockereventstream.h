@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QProcess>
-#include <model/data-objects/dockerevent.h>
+#include <data/data-objects/dockerevent.h>
 
 class DockerEventStream : public QObject
 {

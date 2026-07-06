@@ -21,12 +21,15 @@ qt_add_executable(simple-container-manager
     mainwindow.h
     mainwindow.ui
 
-    model/dockercli.h model/dockercli.cpp
-    model/data-objects/containerinfo.h model/data-objects/containerinfo.cpp
+    data/dockercli.h data/dockercli.cpp
+    data/data-objects/containerinfo.h data/data-objects/containerinfo.cpp
 
-    model/dockereventstream.h model/dockereventstream.cpp
-    model/data-objects/dockerevent.h model/data-objects/dockerevent.cpp
-    model/apppreferences.h model/apppreferences.cpp
+    data/dockereventstream.h data/dockereventstream.cpp
+    data/data-objects/dockerevent.h data/data-objects/dockerevent.cpp
+    data/apppreferences.h data/apppreferences.cpp
+    domain/data-objects/managedcontainer.h domain/data-objects/managedcontainer.cpp
+    domain/mainwindowvmodel.h domain/mainwindowvmodel.cpp
+    domain/containertablemodel.h domain/containertablemodel.cpp
 )
 
 target_link_libraries(simple-container-manager
