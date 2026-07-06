@@ -1,6 +1,9 @@
 #include "containerinfo.h"
 #include <QJsonObject>
 
+ContainerInfo::ContainerInfo(const QString &id, const QString &name, Status status)
+    : m_id(id), m_name(name), m_status(status) {}
+
 ContainerInfo::Status ContainerInfo::statusFromString(QStringView str) {
     if (str.compare(u"running", Qt::CaseInsensitive) == 0)
         return Status::Running;

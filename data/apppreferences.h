@@ -29,7 +29,7 @@ public:
     ~AppPreferences() = default;
     [[nodiscard]] const QList<ContainerSpec>& containers() const { return m_containers; };
     [[nodiscard]] const QSet<QString>& names() const { return m_container_names; };
-    // ui developer: if you see this, remember to give the user a nice message if there are no containers
+    // ui developer: if you see this, remember to give the user a nice message if there are no containers (then remove this comment)
     [[nodiscard]] const bool hasContainers() { return !m_containers.isEmpty(); }
 public slots:
     /**

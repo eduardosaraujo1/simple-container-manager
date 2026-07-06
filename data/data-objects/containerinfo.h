@@ -28,8 +28,7 @@ private:
 public:
     ContainerInfo() = default;
 
-    ContainerInfo(const QString &id, const QString &name, Status status)
-        :  m_id(id), m_name(name), m_status(status) {}
+    ContainerInfo(const QString &id, const QString &name, Status status);
 
     const QString& id() const {
         return this->m_id;
