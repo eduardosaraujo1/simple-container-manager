@@ -1,6 +1,6 @@
-#include "mainwindowvmodel.h"
+#include "mainwindowcontroller.h"
 
-MainWindowVModel::MainWindowVModel(
+MainWindowController::MainWindowController(
     QObject *parent,
     AppPreferences *preferences,
     DockerCLI *dockercli,

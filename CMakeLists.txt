@@ -28,7 +28,7 @@ qt_add_executable(simple-container-manager
     data/data-objects/dockerevent.h data/data-objects/dockerevent.cpp
     data/apppreferences.h data/apppreferences.cpp
     domain/data-objects/managedcontainer.h domain/data-objects/managedcontainer.cpp
-    domain/mainwindowvmodel.h domain/mainwindowvmodel.cpp
+    domain/mainwindowcontroller.h domain/mainwindowcontroller.cpp
     domain/containertablemodel.h domain/containertablemodel.cpp
 )
 

@@ -33,3 +33,10 @@ Ao responder perguntas:
 * prefira exemplos pequenos e isolados;
 * incentive boas práticas de design e arquitetura;
 * considere que o projeto utiliza uma abordagem orientada a objetos tradicional com Qt Widgets e não frameworks adicionais.
+
+# Especificações
+
+ * **Memory Hygiene:** Standard stack allocation and value types are heavily preferred over manual heap pointers (new). Qt’s native parent-child layout hierarchy handles widget lifecycles safely.
+ * **Const & Optimizations:** Immutable fields are marked const by default. Functions return by non-const value to guarantee compiler move semantics. The mutable keyword is reserved for thread-safe caching. Core functions use std::optional<T> instead of unsafe out-parameter references (bool&).
+ * **Configuration & Enums:** Parses its preferences.yaml from a dedicated directory inside QStandardPaths::AppConfigLocation. Enums representing core container states leverage Qt's Meta-Object System (Q\_ENUM) or static-lookup array loops to cleanly process lowercase raw Docker CLI outputs.
+ * **Naming Convention:** Private member attributes explicitly use the m\_ prefix (e.g., m\_proc) to clarify scope boundaries and optimize IDE autocomplete functionality.

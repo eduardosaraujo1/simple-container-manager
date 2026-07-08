@@ -120,6 +120,10 @@ A aplicação deve manter sincronização com o Docker Engine utilizando eventos
 
 Os logs de uma aplicação poderão ser exibidos em uma janela dedicada em tempo real.
 
+#### RF5 – Gerenciar 
+
+Os logs de uma aplicação poderão ser exibidos em uma janela dedicada em tempo real.
+
 **Prioridade:** Could Have.
 
 ### Casos de Uso

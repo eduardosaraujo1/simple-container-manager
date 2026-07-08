@@ -1,38 +1,18 @@
-#ifndef MAINWINDOWVMODEL_H
-#define MAINWINDOWVMODEL_H
+// Check out "Qt6 Dynamic Table Implementation" ChatGPT chat
+// - Implement ContainerRowWidget
+// - Implement ContainerListWidget
+// - Put ContainerListWidget in mainWindow UI
+// - Put DockerCLI, DockerEventStream and ApplicationPreferences in ContainerListWidget and use those as data sources
+// - Write the function below
+//function syncContainers()
+// for each config entry at index i:
+    // if widget exists:
+        // update widget
 
-#include <QObject>
-#include <data/apppreferences.h>
-#include <data/dockercli.h>
-#include <data/dockereventstream.h>
-
-/*
- * Responsability:
- * - Manage the lifecycle of the data sources
- * - Expose UI state (ContainerTableModel)
- * - Expose the following actions:
- *   - startContainer(containerIndex)
- *   - stopContainer(containerIndex)
- *   - runAction(containerIndex)
- *   - refreshContainers()
- *   - reloadSettings()
- *
- */
-class MainWindowVModel : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit MainWindowVModel(
-        QObject *parent,
-        AppPreferences *preferences,
-        DockerCLI *dockercli,
-        DockerEventStream *dockerEventStream
-        );
-private:
-    AppPreferences *m_preferences;
-    DockerCLI *m_dockercli;
-    DockerEventStream *m_dockerEventStream;
-};
-
-#endif // MAINWINDOWVMODEL_H
+        // if widget is not already at position i:
+            // move it (insertWidget)
+    // else:
+        // create widget
+        // insert at position i
+// Ensure empty ContainerListWidget containers display a nice message
+// Ensure errors are handled gracefully
