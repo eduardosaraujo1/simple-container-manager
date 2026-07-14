@@ -27,9 +27,16 @@ qt_add_executable(simple-container-manager
     data/dockereventstream.h data/dockereventstream.cpp
     data/data-objects/dockerevent.h data/data-objects/dockerevent.cpp
     data/apppreferences.h data/apppreferences.cpp
-    domain/data-objects/managedcontainer.h domain/data-objects/managedcontainer.cpp
-    domain/mainwindowcontroller.h domain/mainwindowcontroller.cpp
-    domain/containertablemodel.h domain/containertablemodel.cpp
+
+
+
+
+)
+
+qt_add_resources(simple-container-manager "app_images"
+    PREFIX "/"
+    FILES
+        images/refresh.svg
 )
 
 target_link_libraries(simple-container-manager
