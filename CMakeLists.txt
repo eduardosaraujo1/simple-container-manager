@@ -27,6 +27,7 @@ qt_add_executable(simple-container-manager
     data/dockereventstream.h data/dockereventstream.cpp
     data/data-objects/dockerevent.h data/data-objects/dockerevent.cpp
     data/apppreferences.h data/apppreferences.cpp
+    containerrowwidget.h containerrowwidget.cpp containerrowwidget.ui
 
 
 
