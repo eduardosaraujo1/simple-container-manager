@@ -1,6 +1,7 @@
 #include "containerrowwidget.h"
 #include "ui_containerrowwidget.h"
 
+// TODO: handle empty icon path and action
 ContainerRowWidget::ContainerRowWidget(
     const QString& iconPath,
     const QString& label,
@@ -67,17 +68,25 @@ void ContainerRowWidget::setStatus(Status status)
     case Status::Running:
         ui->status->setText("Running");
         ui->toggle->setText("Stop");
+        ui->toggle->setDisabled(false);
         break;
 
     case Status::Stopped:
         ui->status->setText("Stopped");
         ui->toggle->setText("Start");
+        ui->toggle->setDisabled(false);
         break;
 
     case Status::Error:
         ui->status->setText("Error");
         ui->toggle->setText("Start");
+        ui->toggle->setDisabled(false);
         break;
+    case Status::Loading:
+        ui->status->setText("Loading");
+        ui->toggle->setDisabled(true);
+        break;
+
     }
 
     updateStatusStyle();
@@ -105,6 +114,12 @@ void ContainerRowWidget::updateStatusStyle()
         ui->status->setStyleSheet(
             "color: #9C0006;"
             "background-color: #FFC7CE;"
+        );
+        break;
+    case Status::Loading:
+        ui->status->setStyleSheet(
+            "color: #000000;"
+            "background-color: #C6C6C6;"
         );
         break;
     }

@@ -141,7 +141,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="ContainerListWidget" name="widget" native="true"/>
+           <widget class="ContainerListWidget" name="containerList" native="true"/>
           </item>
          </layout>
         </widget>

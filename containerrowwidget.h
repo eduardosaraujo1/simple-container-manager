@@ -15,6 +15,7 @@ public:
     enum class Status {
         Running,
         Stopped,
+        Loading,
         Error
     };
 

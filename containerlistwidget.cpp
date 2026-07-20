@@ -21,7 +21,7 @@ void ContainerListWidget::initialize(
         auto *row = new ContainerRowWidget(
             spec.icon,
             spec.label,
-            ContainerRowWidget::Status::Stopped,
+            ContainerRowWidget::Status::Loading,
             spec.action,
             this);
 
@@ -46,7 +46,6 @@ void ContainerListWidget::initialize(
         ui->contentsLayout->addWidget(row);
     }
 
-    ui->contentsLayout->addStretch();
     m_initialized = true;
 }
 ContainerListWidget::~ContainerListWidget()
@@ -57,7 +56,6 @@ ContainerListWidget::~ContainerListWidget()
 void ContainerListWidget::refreshContainerInfo(
     const QList<ContainerInfo> &containers)
 {
-    // TODO: add a "Unknown" possible state in ContainerRowWidget
     for (const auto &row : std::as_const(m_rows))
         row->setStatus(ContainerRowWidget::Status::Stopped);
 
@@ -66,7 +64,8 @@ void ContainerListWidget::refreshContainerInfo(
         auto it = m_rows.find(container.name());
 
         if (it == m_rows.end())
-            // container not found
+            // container widget not found
+            qWarning() << "refreshContainerInfo: the corresponding widget for '" << container.name() << "'' was not found. Status will not be displayed.";
             continue;
 
         it.value() // ContainerRowWidget
