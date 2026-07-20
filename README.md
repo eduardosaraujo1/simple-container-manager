@@ -131,7 +131,9 @@ Os logs de uma aplicação poderão ser exibidos em uma janela dedicada em tempo
 
 - [x] Definir escopo
 - [x] Criar camada de abstração para comunicação com docker (ativar e desativar container utilizando nome; equivalente de Stream para reagir a alterações de uma thread `docker events --format json`)
-- [ ] Criar UI para exibir e controlar os containers
+- [ ] Se a config estiver vazia, mostrar mensagem para o usuário
+- [ ] Injetar dependências de DockerCLI, DockerEventStream e AppPreferences na janela principal
+- [ ] Conectar botões gerais de ação
 
 </details>
 
