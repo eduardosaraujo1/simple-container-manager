@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     AppPreferences prefs{this};
     connect(&prefs, &AppPreferences::preferencesUpdated, [&, this]() {
         ui->containerList->initialize(prefs.containers());

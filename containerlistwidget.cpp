@@ -16,6 +16,8 @@ void ContainerListWidget::initialize(
         return;
     }
 
+    ui->loading->hide();
+
     for (const auto &spec : containers) {
 
         auto *row = new ContainerRowWidget(

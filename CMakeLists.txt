@@ -39,6 +39,8 @@ qt_add_resources(simple-container-manager "app_images"
     PREFIX "/"
     FILES
         images/refresh.svg
+        images/more_horiz.svg
+        images/terminal.svg
 )
 
 target_link_libraries(simple-container-manager
