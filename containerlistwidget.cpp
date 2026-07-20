@@ -46,6 +46,7 @@ void ContainerListWidget::initialize(
         ui->contentsLayout->addWidget(row);
     }
 
+    ui->contentsLayout->addStretch();
     m_initialized = true;
 }
 ContainerListWidget::~ContainerListWidget()
