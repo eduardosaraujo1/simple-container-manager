@@ -54,11 +54,22 @@ void ContainerRowWidget::setLabel(const QString& label) {
 
 void ContainerRowWidget::setIcon(const QString& iconPath)
 {
-    QPixmap p(iconPath);
-    p.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    ui->icon->setPixmap(p);
-}
+    QString path = iconPath.trimmed();
 
+    if (path.isEmpty()) {
+        path = ":/images/terminal.svg";
+    }
+
+    QPixmap pixmap(path);
+
+    if (pixmap.isNull()) {
+        pixmap.load(":/images/terminal.svg");
+    }
+
+    ui->icon->setPixmap(
+        pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+    );
+}
 void ContainerRowWidget::setStatus(Status status)
 {
     m_status = status;

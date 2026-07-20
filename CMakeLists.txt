@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 project(simple-container-manager LANGUAGES CXX)
 include(FetchContent)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg)
 
 FetchContent_Declare(
     yaml-cpp
@@ -30,16 +30,12 @@ qt_add_executable(simple-container-manager
     containerrowwidget.h containerrowwidget.cpp containerrowwidget.ui
     containerlistwidget.h containerlistwidget.cpp containerlistwidget.ui
 
-
-
-
 )
 
 qt_add_resources(simple-container-manager "app_images"
     PREFIX "/"
     FILES
         images/refresh.svg
-        images/more_horiz.svg
         images/terminal.svg
 )
 
@@ -47,6 +43,7 @@ target_link_libraries(simple-container-manager
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt6::Svg
 )
 target_link_libraries(simple-container-manager PRIVATE yaml-cpp)
 

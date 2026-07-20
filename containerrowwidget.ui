@@ -33,7 +33,7 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="icon_padding">
+    <layout class="QHBoxLayout" name="icon__padding_layout">
      <property name="spacing">
       <number>0</number>
      </property>
