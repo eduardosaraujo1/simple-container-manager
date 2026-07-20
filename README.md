@@ -120,25 +120,17 @@ A aplicação deve manter sincronização com o Docker Engine utilizando eventos
 
 Os logs de uma aplicação poderão ser exibidos em uma janela dedicada em tempo real.
 
-#### RF5 – Gerenciar 
-
-Os logs de uma aplicação poderão ser exibidos em uma janela dedicada em tempo real.
-
-**Prioridade:** Could Have.
-
 ### Casos de Uso
 
 1. Listar aplicações;
 2. Ativar aplicação;
 3. Desativar aplicação;
 4. Recarregar aplicações;
-5. Recarregar configurações.
 
 # Roadmap
 
 - [x] Definir escopo
 - [x] Criar camada de abstração para comunicação com docker (ativar e desativar container utilizando nome; equivalente de Stream para reagir a alterações de uma thread `docker events --format json`)
-- [ ] Criar Qt Model para representar o estado atual de cada container
 - [ ] Criar UI para exibir e controlar os containers
 
 </details>
