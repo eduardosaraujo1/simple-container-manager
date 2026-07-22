@@ -21,10 +21,11 @@ public:
     ~ContainerListWidget();
 
     void initialize(const QList<AppPreferences::ContainerSpec> &containers);
+public slots:
     void refreshContainerInfo(const QList<ContainerInfo> &containers);
 
 signals:
-    void containerToggle(const QString &containerName, bool start);
+    void containerToggle(const QString &containerName, bool isStartCommand);
     void containerAction(const QString &containerName, const QString &action);
 
 private:

@@ -16,8 +16,6 @@ DockerEventStream::DockerEventStream(QObject *parent)
     connect(&m_proc, &QProcess::finished, this, &DockerEventStream::onUnexpectedError);
     connect(&m_proc, &QProcess::readyReadStandardError, this, &DockerEventStream::onErrorMessage);
     connect(&m_proc, &QProcess::readyReadStandardOutput, this, &DockerEventStream::onEventDetected);
-
-    restart();
 }
 
 DockerEventStream::~DockerEventStream() {
@@ -49,6 +47,10 @@ void DockerEventStream::abort() {
             m_proc.kill();
         }
     }
+}
+
+void DockerEventStream::start() {
+    restart();
 }
 
 void DockerEventStream::restart() {

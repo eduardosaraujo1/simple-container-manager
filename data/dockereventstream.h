@@ -14,6 +14,7 @@ public:
     bool isActive();
     bool waitUntilActive();
 public slots:
+    void start();
     void restart();
     void abort();
 private:

@@ -35,6 +35,7 @@ void ContainerListWidget::initialize(
                 &ContainerRowWidget::toggleRequested,
                 this,
                 [this, containerName](bool start) {
+                    qInfo() << "containerToggle: ui emitting request to `" << start ? "start" : "stop" << "` container " << containerName;
                     emit containerToggle(containerName, start);
                 });
 
@@ -42,6 +43,7 @@ void ContainerListWidget::initialize(
                 &ContainerRowWidget::adminRequested,
                 this,
                 [this, containerName](const QString &action) {
+                    qInfo() << "containerToggle: ui emitting request to run command `" << action << "` for initialization of" << containerName;
                     emit containerAction(containerName, action);
                 });
 
@@ -87,9 +89,10 @@ ContainerListWidget::mapStatus(ContainerInfo::Status status)
     case ContainerInfo::Status::Created:
     case ContainerInfo::Status::Exited:
         return ContainerRowWidget::Status::Stopped;
+    case ContainerInfo::Status::Restarting:
+        return ContainerRowWidget::Status::Loading;
 
     case ContainerInfo::Status::Paused:
-    case ContainerInfo::Status::Restarting:
     case ContainerInfo::Status::Removing:
     case ContainerInfo::Status::Dead:
     case ContainerInfo::Status::Unknown:

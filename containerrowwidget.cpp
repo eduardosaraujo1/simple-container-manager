@@ -1,7 +1,6 @@
 #include "containerrowwidget.h"
 #include "ui_containerrowwidget.h"
 
-// TODO: handle empty icon path and action
 ContainerRowWidget::ContainerRowWidget(
     const QString& iconPath,
     const QString& label,

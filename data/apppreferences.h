@@ -30,7 +30,8 @@ public:
     [[nodiscard]] const QList<ContainerSpec>& containers() const { return m_containers; };
     [[nodiscard]] const QSet<QString>& names() const { return m_container_names; };
     // ui developer: if you see this, remember to give the user a nice message if there are no containers (then remove this comment)
-    [[nodiscard]] const bool hasContainers() { return !m_containers.isEmpty(); }
+    [[nodiscard]] bool hasContainers() { return !m_containers.isEmpty(); }
+    [[nodiscard]] bool isLoaded() { return m_is_loaded; }
 public slots:
     /**
      * @brief reads the config file and stores it in the application memory
@@ -49,6 +50,7 @@ private:
     /** @brief parses the YAML node and stores container preferences in memory. */
     void storeContainerPreferences(const YAML::Node &config);
     //attributes
+    bool m_is_loaded = false;
     QList<ContainerSpec> m_containers;
     QSet<QString> m_container_names;
     QString m_config_path;
