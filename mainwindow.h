@@ -10,37 +10,93 @@ class MainWindow;
 QT_END_NAMESPACE
 
 /*
-MainWindow either instantiates or receives the data sources in the constructor (not both though; I'll leave this
-decision to the whims of the LLM)
-Sources: <data/dockercli.h> <data/dockereventstream.cpp> <data/apppreferences.h>
-Sources: <data/data-objects/containerinfo.h>
-MainWindow needs to find a way to, cleanly and as soon as it is loaded:
-- Hook ui->btnExit into an application exit call
-- Start app preferences (call read config file at least once and don't mutate ui->containerList until it's loaded)
-- Ensure AppPreferences has not emitted any critical errors, and has a QList<AppPreferences::ContainerSpec>
-    - if it errors... idk, the data source already has logging so we should export the logs into a file, show the error message and end the application when the popup is closed
-- Call containerList.initialize(QList<AppPrefrences::ContainerSpec>) with appPreferences's data
-    - if the list happens to be empty, skip anything related to container refresh (refresh button, docker event initialization) and show a message like "Welcome! Please modify the config file" or something
-    - If it's not empty then proceed with the other processes normally
-- Ensure DockerEventStream is up (call .start() after initialization)
-- Hook ui->btnRefresh click into the container state reload logic (more on that later)
-- Hook the signal DockerEventStream::eventReceived into the reload logic (more on that later)
-    - DockerEventStream::criticalError exists. If it fails the application isn't exactly broken, it just doesn't refresh automatically, so I'm unsure what to do. Add a little warning at the corner maybe (add a stub and comment whatever you think is best)
-- Hook ui->containerList.containerToggle(const QString &containerName, bool isStartCommand) into a DockerCLI startContainer or stopContainer call.
-    - To comply with optimistic UI requirements, we should show the container as started before DockerCLI responds with the new state. Currently the ContainerListWidget (ui->containerList) does not have a method to do that. Pretend it does and write a comment above it, signaling that I should implement that.
-- Hook ui->containerList.containerAction(const QString &containerName, const QString &action) into a new QProcess to run (mark a TODO that says soon a refactor will abstract this into a domain ActionRunner service/usecase class)
-    - Disable the button and reenable it after 1 second, I want to avoid process spamming
-- Implement the reload logic in a dedicated domain/reloadcontainersaction.cpp file: 
-    - Disable the refresh button
-    - Request a container refresh through DockerCLI::requestContainerRefresh
-    - Wait on signal DockerCLi::containersUpdated:
-        - After 1 second add a loading indicator
-        - after 15 seconds, if there is no response then show an error dialog and remove the loading indicator
-    - When the signal is received, it will be with the parameter QList<ContainerInfo>
-    - Call ui->containerList.refreshContainerInfo() with the container info list
-    - Remove the loading indicator
-    - After 1 second, enable the button 
-Use best practices in separation of concerns to avoid messy code
+MainWindow either instantiates services in the constructor, it is the source of dependency injection (like the context api from React)
+
+Services:
+- <domain/containerservice.h>
+- <domain/containeractionrunner.h>
+- <data/apppreferences.h>
+
+Data:
+- <data/data-objects/containerinfo.h>
+
+ContainerService encapsulates all Docker-related infrastructure
+(DockerCLI + DockerEventStream) and exposes a higher-level API for
+container operations and state synchronization.
+
+MainWindow responsibilities:
+
+- Hook ui->btnExit into an application exit call.
+
+- Start AppPreferences (call readConfigFile() at least once and don't
+  mutate ui->containerList until it's loaded).
+
+- Ensure AppPreferences has not emitted any critical errors and has a
+  QList<AppPreferences::ContainerSpec>.
+    - If it errors:
+        - The data source already performs its own logging.
+        - Show an error dialog.
+        - Exit the application once the dialog is dismissed.
+
+- Call ui->containerList.initialize(QList<AppPreferences::ContainerSpec>)
+  using AppPreferences' data.
+
+    - If the configuration contains no containers:
+        - Skip any ContainerService initialization.
+        - Disable refresh-related functionality.
+        - Show a welcome message such as
+          "Welcome! Please edit the configuration file to add containers."
+
+    - Otherwise:
+        - Initialize ContainerService.
+        - Trigger the initial container refresh.
+
+- Hook ui->btnRefresh into ContainerService::refreshContainers().
+
+- Hook ui->containerList.containerAction(const QString &containerName,
+  const QString &action) into a new QProcess.
+
+    - Disable the corresponding action button.
+    - Re-enable it after one second to prevent process spam.
+
+    // TODO:
+    // Replace this with a dedicated ActionRunner service/use case so
+    // MainWindow no longer executes external processes directly.
+
+- Hook ui->containerList.containerAction(const QString &containerName,
+  const QString &action) into ContainerActionRunner::run().
+
+    ContainerActionRunner is a dedicated application use case responsible
+    for executing user-defined container actions.
+
+    Responsibilities:
+        - Validate that the requested action is allowed.
+        - Launch the configured command in a QProcess.
+        - Prevent action spam by rejecting duplicate requests while one
+          is already running (or temporarily disabling execution).
+        - Notify the presenter when execution starts and finishes so the
+          corresponding action button can be enabled/disabled.
+        - Report execution failures.
+
+    MainWindow should only react to its signals by updating the UI.
+
+    Although the initial implementation may internally use QProcess,
+    process management should remain encapsulated within
+    ContainerActionRunner.
+
+- Hook ui->containerList.containerAction(const QString &containerName,
+  const QString &action) into a new QProcess.
+
+    - Disable the corresponding action button.
+    - Re-enable it after one second to prevent process spam.
+
+    // TODO:
+    // Replace this with a dedicated ActionRunner service/use case so
+    // MainWindow no longer executes external processes directly.
+
+Keep MainWindow focused on presentation logic only.
+ContainerService owns all container-related workflows, timing,
+automatic refresh behavior and Docker interactions.
 */
 class MainWindow : public QMainWindow
 {
