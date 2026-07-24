@@ -1,9 +1,21 @@
 #include "apppreferences.h"
 #include <optional>
-#include <sstream>
 #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
+
+const QList<AppPreferences::ContainerSpec>& AppPreferences::containers() const {
+    return m_containers;
+}
+const QSet<QString>& AppPreferences::containerNames() const {
+    return m_container_names;
+}
+bool AppPreferences::hasContainers() {
+    return !m_containers.isEmpty();
+}
+bool AppPreferences::isLoaded() {
+    return m_is_loaded;
+}
 
 namespace {
     bool setupConfigDirectory(const QString &configFilePath) {

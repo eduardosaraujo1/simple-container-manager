@@ -27,11 +27,10 @@ public:
     };
     explicit AppPreferences(QObject *parent = nullptr);
     ~AppPreferences() = default;
-    [[nodiscard]] const QList<ContainerSpec>& containers() const { return m_containers; };
-    [[nodiscard]] const QSet<QString>& names() const { return m_container_names; };
-    // ui developer: if you see this, remember to give the user a nice message if there are no containers (then remove this comment)
-    [[nodiscard]] bool hasContainers() { return !m_containers.isEmpty(); }
-    [[nodiscard]] bool isLoaded() { return m_is_loaded; }
+    [[nodiscard]] const QList<ContainerSpec>& containers() const;
+    [[nodiscard]] const QSet<QString>& containerNames() const;
+    [[nodiscard]] bool hasContainers();
+    [[nodiscard]] bool isLoaded();
 public slots:
     /**
      * @brief reads the config file and stores it in the application memory
