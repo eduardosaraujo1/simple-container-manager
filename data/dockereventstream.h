@@ -3,35 +3,50 @@
 
 #include <QObject>
 #include <QProcess>
+
 #include <data/data-objects/dockerevent.h>
 
 class DockerEventStream : public QObject
 {
     Q_OBJECT
+
+public:
+    enum class StreamError
+    {
+        FailedToStart,
+        ProcessCrashed,
+        ProcessError,
+        ParseError,
+    };
+
 public:
     explicit DockerEventStream(QObject *parent = nullptr);
     ~DockerEventStream();
-    bool isActive();
-    bool waitUntilActive();
+
+    bool isRunning() const;
+
 public slots:
     void start();
-    void restart();
-    void abort();
-private:
-    //attributes
-    QProcess m_proc{this};
-    int m_consecutive_errors = 0;
-    bool m_attempt_restart = true;
-    //assistent methods
-    void handleErrors();
-private slots:
-    void onStartError(QProcess::ProcessError error);
-    void onUnexpectedError(int exitCode, QProcess::ExitStatus exitStatus);
-    void onErrorMessage();
-    void onEventDetected();
+    void stop();
+
 signals:
+    void started();
+    void stopped();
+
     void eventReceived(const DockerEvent &event);
-    void criticalError();
+
+    void errorOccurred(StreamError error, const QString &message);
+
+private slots:
+    void onReadyRead();
+    void onProcessError(QProcess::ProcessError error);
+    void onProcessFinished(int exitCode,
+                           QProcess::ExitStatus exitStatus);
+
+private:
+    std::optional<DockerEvent> parseDockerEvent(const QByteArray &rawLine);
+
+    QProcess m_process{this};
 };
 
-#endif // DOCKEREVENTSTREAM_H
+#endif
