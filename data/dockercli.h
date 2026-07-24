@@ -5,7 +5,7 @@
 #include <QProcess>
 #include <QString>
 #include <QStringList>
-#include <model/data-objects/containerinfo.h>
+#include "data-objects/containerinfo.h"
 
 class DockerCLI : public QObject
 {

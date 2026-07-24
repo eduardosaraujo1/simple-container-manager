@@ -28,12 +28,12 @@ set(TS_FILES workspace_pt_BR.ts)
 add_executable(containermanager
   main.cpp
   ${TS_FILES}
-  model/dockercli.h model/dockercli.cpp
-  model/data-objects/containerinfo.h model/data-objects/containerinfo.cpp
+  data/dockercli.h data/dockercli.cpp
+  data/data-objects/containerinfo.h data/data-objects/containerinfo.cpp
 
-  model/dockereventstream.h model/dockereventstream.cpp
-  model/data-objects/dockerevent.h model/data-objects/dockerevent.cpp
-  model/apppreferences.h model/apppreferences.cpp
+  data/dockereventstream.h data/dockereventstream.cpp
+  data/data-objects/dockerevent.h data/data-objects/dockerevent.cpp
+  data/apppreferences.h data/apppreferences.cpp
 
 
 )

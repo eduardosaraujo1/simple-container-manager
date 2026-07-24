@@ -35,7 +35,7 @@ signals:
 
     void eventReceived(const DockerEvent &event);
 
-    void errorOccurred(StreamError error, const QString &message);
+    void errorOccurred(StreamError error);
 
 private slots:
     void onReadyRead();

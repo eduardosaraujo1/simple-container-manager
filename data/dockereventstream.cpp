@@ -12,43 +12,43 @@
 DockerEventStream::DockerEventStream(QObject *parent)
     : QObject{parent}
 {
-    connect(&m_proc, &QProcess::errorOccurred, this, &DockerEventStream::onProcessError);
-    connect(&m_proc, &QProcess::finished, this, &DockerEventStream::onProcessFinished);
-    connect(&m_proc, &QProcess::readyReadStandardOutput, this, &DockerEventStream::onReadyRead);
-    connect(&m_proc, &QProcess::readyReadStandardError, [&m_proc]()
-            { qDebug() << "[DockerEventStream] Standard error captured: " << m_proc->readAllStandardError(); });
+    connect(&m_process, &QProcess::errorOccurred, this, &DockerEventStream::onProcessError);
+    connect(&m_process, &QProcess::finished, this, &DockerEventStream::onProcessFinished);
+    connect(&m_process, &QProcess::started, this, &DockerEventStream::started);
+    connect(&m_process, &QProcess::readyReadStandardOutput, this, &DockerEventStream::onReadyRead);
+    connect(&m_process, &QProcess::readyReadStandardError, [this]()
+            { qDebug() << "[DockerEventStream] Standard error captured: " << m_process.readAllStandardError(); });
 }
 
 DockerEventStream::~DockerEventStream()
 {
-    m_proc.disconnect(this);
-    m_attempt_restart = false;
-    if (m_proc.state() == QProcess::Running)
+    m_process.disconnect(this);
+
+    if (m_process.state() == QProcess::Running)
     {
-        qWarning() << "~DockerEventStream: QProcess was not finished. Forcing kill.";
-        m_proc.kill();
+        qWarning() << "[DockerEventStream] Stream was not grafecully closed before shutdown. Emitting terminate signal.";
+        m_process.kill();
     }
 }
 
 bool DockerEventStream::isRunning() const
 {
-    return m_proc.state() == QProcess::Running;
+    return m_process.state() == QProcess::Running;
 }
 
 void DockerEventStream::stop()
 {
-    if (m_proc.state() != QProcess::Running)
+    if (m_process.state() != QProcess::Running)
     {
         return;
     }
 
     qInfo() << "[DockerEventStream] Gracefully stopping Docker Events stream...";
-    m_proc.terminate();
-
-    if (!m_proc.waitForFinished(3000))
+    m_process.terminate();
+ if (!m_process.waitForFinished(3000))
     {
         qWarning() << "[DockerEventStream] Could not stop stream gracefully within 3s. Forcing kill...";
-        m_proc.kill();
+        m_process.kill();
     }
 }
 
@@ -56,11 +56,11 @@ void DockerEventStream::start()
 {
     if (isRunning())
     {
-        qInfo() << "[DockerEventStream] Docker Stream is already running. Ignoring 'start' request.";
+        qWarning() << "[DockerEventStream] Docker Stream is already running. Ignoring 'start' request.";
         return;
     }
 
-    qInfo() << "[DockerEventStream] Initializing Docker Events stream...";
+    qDebug() << "[DockerEventStream] Initializing Docker Events stream...";
 
     QStringList arguments = {
         "events",
@@ -69,7 +69,7 @@ void DockerEventStream::start()
         "--filter",
         "Type=container"};
 
-    m_proc.start("docker", arguments, QProcess::ReadOnly);
+    m_process.start("docker", arguments, QProcess::ReadOnly);
 }
 
 void DockerEventStream::onReadyRead()
@@ -145,8 +145,9 @@ std::optional<DockerEvent> DockerEventStream::parseDockerEvent(const QByteArray 
     if (jsonParseError.error != QJsonParseError::NoError)
     {
         qWarning() << "[DockerEventStream] Could not parse docker event data received from terminal.\n"
-                   << "Error:" << jsonParseError.errorString();
-        << "Raw Data:" << rawLine << "\n" return std::nullopt;
+                   << "Error:" << jsonParseError.errorString()
+                   << "Raw Data:" << rawLine << "\n";
+        return std::nullopt;
     }
 
     const QJsonObject obj = doc.object();
