@@ -9,14 +9,13 @@ ContainerRowWidget::ContainerRowWidget(
     QWidget *parent
 )
     : QWidget(parent),
-      ui(new Ui::ContainerRowWidget),
-      m_status(status),
-      m_action(action)
+      ui(new Ui::ContainerRowWidget)
 {
     ui->setupUi(this);
 
     setIcon(iconPath);
     setLabel(label);
+    setAction(action);
     setStatus(status);
 
     connect(ui->toggle, &QPushButton::clicked,
@@ -45,10 +44,16 @@ void ContainerRowWidget::onAdminClicked()
 
 void ContainerRowWidget::setAction(const QString& action) {
     m_action = action;
+    ui->admin->setEnabled(! action.isEmpty());
 }
 
 void ContainerRowWidget::setLabel(const QString& label) {
-    ui->label->setText(label);
+    if (! label.isEmpty()) {
+        ui->label->setText(label);
+    } else {
+        qWarning() << "[UI] Label, a required field, is undefined.";
+        ui->label->setText("Não definido.");
+    }
 }
 
 void ContainerRowWidget::setIcon(const QString& iconPath)

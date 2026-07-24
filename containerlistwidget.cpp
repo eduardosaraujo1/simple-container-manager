@@ -12,7 +12,7 @@ void ContainerListWidget::initialize(
     const QList<AppPreferences::ContainerSpec> &containers)
 {
     if (m_initialized) {
-        qWarning() << "ContainerListWidget::initialize() called more than once.";
+        qWarning() << "[ContainerListWidget] Attempted to initialize more than once. This is unsupported.";
         return;
     }
 
@@ -35,7 +35,7 @@ void ContainerListWidget::initialize(
                 &ContainerRowWidget::toggleRequested,
                 this,
                 [this, containerName](bool start) {
-                    qInfo() << "containerToggle: ui emitting request to `" << start ? "start" : "stop" << "` container " << containerName;
+                    qInfo() << "containerToggle: ui emitting request to `" << (start ? "start" : "stop") << "` container " << containerName;
                     emit containerToggle(containerName, start);
                 });
 
@@ -43,6 +43,9 @@ void ContainerListWidget::initialize(
                 &ContainerRowWidget::adminRequested,
                 this,
                 [this, containerName](const QString &action) {
+                    if (action.isEmpty()) {
+                        qWarning() << "[ContainerListWidget] Attempted to run an empty action. This suggests a UI problem that doesn't block the user from running unset actions.";
+                    }
                     qInfo() << "containerToggle: ui emitting request to run command `" << action << "` for initialization of" << containerName;
                     emit containerAction(containerName, action);
                 });

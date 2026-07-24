@@ -101,7 +101,7 @@ namespace {
             const YAML::Node item = containers[i];
 
             if (!item["name"] || !item["label"]) {
-                qWarning() << "parseContainerPreferences: Skipping entry at index" << i
+                qWarning() << "[ApplicationPreferences] Skipping entry at index" << i
                            << "due to missing required 'name' or 'label' keys.";
                 continue;
             }

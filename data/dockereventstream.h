@@ -35,7 +35,7 @@ signals:
 
     void eventReceived(const DockerEvent &event);
 
-    void errorOccurred(StreamError error);
+    void errorOccurred(DockerEventStream::StreamError error);
 
 private slots:
     void onReadyRead();
