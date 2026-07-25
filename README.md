@@ -134,6 +134,8 @@ Os logs de uma aplicação poderão ser exibidos em uma janela dedicada em tempo
 - [ ] Se a config estiver vazia, mostrar mensagem para o usuário
 - [ ] Injetar dependências de DockerCLI, DockerEventStream e AppPreferences na janela principal
 - [ ] Conectar botões gerais de ação
+- [ ] Futuro: adicionar caso de uso de ver erro em uma aplicação
+- [ ] Futuro: melhorar forma de salvar e enviar logs para o desenvolvedor
 
 </details>
 
