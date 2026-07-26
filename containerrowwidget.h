@@ -3,8 +3,9 @@
 
 #include <QWidget>
 
-namespace Ui {
-class ContainerRowWidget;
+namespace Ui
+{
+    class ContainerRowWidget;
 }
 
 class ContainerRowWidget : public QWidget
@@ -12,7 +13,8 @@ class ContainerRowWidget : public QWidget
     Q_OBJECT
 
 public:
-    enum class Status {
+    enum class Status
+    {
         Running,
         Stopped,
         Loading,
@@ -20,23 +22,22 @@ public:
     };
 
     explicit ContainerRowWidget(
-        const QString& iconPath,
-        const QString& label,
+        const QString &iconPath,
+        const QString &label,
         Status status,
-        const QString& action,
-        QWidget *parent = nullptr
-    );
+        bool hasAction,
+        QWidget *parent = nullptr);
 
     ~ContainerRowWidget();
 
-    void setIcon(const QString& iconPath);
-    void setLabel(const QString& label);
+    void setIcon(const QString &iconPath);
+    void setLabel(const QString &label);
     void setStatus(Status status);
-    void setAction(const QString& action);
+    void setAction(const QString &action);
 
 signals:
     void toggleRequested(bool start);
-    void adminRequested(QString action);
+    void adminRequested();
 
 private slots:
     void onToggleClicked();

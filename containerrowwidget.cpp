@@ -2,12 +2,11 @@
 #include "ui_containerrowwidget.h"
 
 ContainerRowWidget::ContainerRowWidget(
-    const QString& iconPath,
-    const QString& label,
+    const QString &iconPath,
+    const QString &label,
     Status status,
-    const QString& action,
-    QWidget *parent
-)
+    bool hasAction,
+    QWidget *parent)
     : QWidget(parent),
       ui(new Ui::ContainerRowWidget)
 {
@@ -15,14 +14,18 @@ ContainerRowWidget::ContainerRowWidget(
 
     setIcon(iconPath);
     setLabel(label);
-    setAction(action);
     setStatus(status);
 
     connect(ui->toggle, &QPushButton::clicked,
             this, &ContainerRowWidget::onToggleClicked);
 
-    connect(ui->admin, &QPushButton::clicked,
-            this, &ContainerRowWidget::onAdminClicked);
+    if (hasAction)
+    {
+        connect(ui->admin, &QPushButton::clicked,
+                this, &ContainerRowWidget::onAdminClicked);
+    }
+
+    ui->admin->setEnabled(hasAction);
 }
 
 ContainerRowWidget::~ContainerRowWidget()
@@ -39,46 +42,51 @@ void ContainerRowWidget::onToggleClicked()
 
 void ContainerRowWidget::onAdminClicked()
 {
-    emit adminRequested(m_action);
+    emit adminRequested();
 }
 
-void ContainerRowWidget::setAction(const QString& action) {
+void ContainerRowWidget::setAction(const QString &action)
+{
     m_action = action;
-    ui->admin->setEnabled(! action.isEmpty());
 }
 
-void ContainerRowWidget::setLabel(const QString& label) {
-    if (! label.isEmpty()) {
+void ContainerRowWidget::setLabel(const QString &label)
+{
+    if (!label.isEmpty())
+    {
         ui->label->setText(label);
-    } else {
-        qWarning() << "[UI] Label, a required field, is undefined.";
+    }
+    else
+    {
+        qWarning() << "[UI] Required field 'Label' is undefined.";
         ui->label->setText("Não definido.");
     }
 }
 
-void ContainerRowWidget::setIcon(const QString& iconPath)
+void ContainerRowWidget::setIcon(const QString &iconPath)
 {
     QString path = iconPath.trimmed();
 
-    if (path.isEmpty()) {
+    if (path.isEmpty())
+    {
         path = ":/images/terminal.svg";
     }
 
     QPixmap pixmap(path);
 
-    if (pixmap.isNull()) {
+    if (pixmap.isNull())
+    {
         pixmap.load(":/images/terminal.svg");
     }
 
     ui->icon->setPixmap(
-        pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation)
-    );
+        pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 void ContainerRowWidget::setStatus(Status status)
 {
     m_status = status;
 
-    switch(status)
+    switch (status)
     {
     case Status::Running:
         ui->status->setText("Running");
@@ -101,7 +109,6 @@ void ContainerRowWidget::setStatus(Status status)
         ui->status->setText("Loading");
         ui->toggle->setDisabled(true);
         break;
-
     }
 
     updateStatusStyle();
@@ -109,33 +116,29 @@ void ContainerRowWidget::setStatus(Status status)
 
 void ContainerRowWidget::updateStatusStyle()
 {
-    switch(m_status)
+    switch (m_status)
     {
     case Status::Running:
         ui->status->setStyleSheet(
             "color: #008000;"
-            "background-color: #C6EFCE;"
-        );
+            "background-color: #C6EFCE;");
         break;
 
     case Status::Stopped:
         ui->status->setStyleSheet(
             "color: #9C6500;"
-            "background-color: #FFEB9C;"
-        );
+            "background-color: #FFEB9C;");
         break;
 
     case Status::Error:
         ui->status->setStyleSheet(
             "color: #9C0006;"
-            "background-color: #FFC7CE;"
-        );
+            "background-color: #FFC7CE;");
         break;
     case Status::Loading:
         ui->status->setStyleSheet(
             "color: #000000;"
-            "background-color: #C6C6C6;"
-        );
+            "background-color: #C6C6C6;");
         break;
     }
 }

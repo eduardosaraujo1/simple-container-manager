@@ -2,8 +2,7 @@
 #include "ui_containerlistwidget.h"
 
 ContainerListWidget::ContainerListWidget(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::ContainerListWidget)
+    : QWidget(parent), ui(new Ui::ContainerListWidget)
 {
     ui->setupUi(this);
 }
@@ -11,14 +10,16 @@ ContainerListWidget::ContainerListWidget(QWidget *parent)
 void ContainerListWidget::initialize(
     const QList<AppPreferences::ContainerSpec> &containers)
 {
-    if (m_initialized) {
+    if (m_initialized)
+    {
         qWarning() << "[ContainerListWidget] Attempted to initialize more than once. This is unsupported.";
         return;
     }
 
     ui->loading->hide();
 
-    for (const auto &spec : containers) {
+    for (const auto &spec : containers)
+    {
 
         auto *row = new ContainerRowWidget(
             spec.icon,
@@ -34,20 +35,23 @@ void ContainerListWidget::initialize(
         connect(row,
                 &ContainerRowWidget::toggleRequested,
                 this,
-                [this, containerName](bool start) {
-                    qInfo() << "containerToggle: ui emitting request to `" << (start ? "start" : "stop") << "` container " << containerName;
+                [this, containerName](bool start)
+                {
+                    qInfo() << "[UI] Requesting to `" << (start ? "start" : "stop") << "` container " << containerName;
                     emit containerToggle(containerName, start);
                 });
 
         connect(row,
                 &ContainerRowWidget::adminRequested,
                 this,
-                [this, containerName](const QString &action) {
-                    if (action.isEmpty()) {
+                [this, containerName]()
+                {
+                    if (action.isEmpty())
+                    {
                         qWarning() << "[ContainerListWidget] Attempted to run an empty action. This suggests a UI problem that doesn't block the user from running unset actions.";
                     }
-                    qInfo() << "containerToggle: ui emitting request to run command `" << action << "` for initialization of" << containerName;
-                    emit containerAction(containerName, action);
+                    qInfo() << "[UI] Requesting to run admin command from " << containerName;
+                    emit containerAction(containerName);
                 });
 
         ui->contentsLayout->addWidget(row);
@@ -67,14 +71,15 @@ void ContainerListWidget::refreshContainerInfo(
     for (const auto &row : std::as_const(m_rows))
         row->setStatus(ContainerRowWidget::Status::Stopped);
 
-    for (const auto &container : containers) {
+    for (const auto &container : containers)
+    {
 
         auto it = m_rows.find(container.name());
 
         if (it == m_rows.end())
             // container widget not found
             qWarning() << "refreshContainerInfo: the corresponding widget for '" << container.name() << "'' was not found. Status will not be displayed.";
-            continue;
+        continue;
 
         it.value() // ContainerRowWidget
             ->setStatus(mapStatus(container.status()));
@@ -84,7 +89,8 @@ void ContainerListWidget::refreshContainerInfo(
 ContainerRowWidget::Status
 ContainerListWidget::mapStatus(ContainerInfo::Status status)
 {
-    switch (status) {
+    switch (status)
+    {
 
     case ContainerInfo::Status::Running:
         return ContainerRowWidget::Status::Running;
