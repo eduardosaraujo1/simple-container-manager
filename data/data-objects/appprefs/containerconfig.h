@@ -34,7 +34,7 @@ public:
 private:
     ContainerConfig() = default;
 
-    QHash<QString, ContainerSpec> m_containers;
+    QHash<QString, ContainerSpec> m_containers; // name -> spec
 };
 
 #endif // CONTAINERCONFIG_H
