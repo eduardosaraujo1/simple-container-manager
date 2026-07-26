@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QStringList>
 
-#include <data/apppreferences.h>
+#include <data/data-objects/containerconfig>
 #include <data/data-objects/containerinfo.h>
 #include <data/data-objects/dockerevent.h>
 #include <data/dockercli.h>
@@ -29,8 +29,8 @@ class ContainerService : public QObject
 public:
     explicit ContainerService(
         DockerCLI &cli,
-        DockerEventStream &str,
-        AppPreferences &prefs,
+        DockerEventStream &stream,
+        ContainerConfig &prefs,
         QObject *parent = nullptr);
     ~ContainerService();
 
@@ -41,7 +41,7 @@ public:
     [[nodiscard]] bool isAutoRefreshEnabled() const;
 
 public slots:
-    /** @brief Requests an up-to-date list of tracked containers from Docker. */
+    /** @brief Requests an up-to-date status of tracked containers from Docker. */
     void refreshContainers();
 
     /** @brief Starts the given container. */
@@ -74,7 +74,7 @@ private slots:
 private:
     DockerCLI *m_cli;
     DockerEventStream *m_eventStream;
-    AppPreferences *m_appPrefs;
+    ContainerConfig *m_containerConfig;
 
     QHash<QString, AppPreferences::ContainerSpec> m_containers; // name -> spec
 };

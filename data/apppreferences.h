@@ -2,45 +2,38 @@
 #define APPPREFERENCES_H
 
 #include <QObject>
-#include <QList>
-#include <QSet>
-#include <QFile>
+#include <QString>
 #include <yaml-cpp/yaml.h>
+#include "data-objects/appprefs/containerconfig.h"
+#include <optional>
 
-/**
- * @brief The AppPreferences class allows the application to interface with preferences set by the user
- */
 class AppPreferences : public QObject
 {
     Q_OBJECT
 public:
-    struct ContainerSpec
-    {
-        QString name;   // required
-        QString label;  // required
-        QString icon;   // nullable
-        QString action; // nullable
-
-        QString toString() const
-        {
-            return "ContainerSpec[name=\"" % name % "\",label=\"" % label % "\",icon=\"" % icon % "\",action=\"" % action % "\"]";
-        }
-    };
     explicit AppPreferences(QObject *parent = nullptr);
     ~AppPreferences() = default;
-    [[nodiscard]] const QList<ContainerSpec> &containers() const;
-    [[nodiscard]] const QSet<QString> &containerNames() const;
-    [[nodiscard]] bool hasContainers();
+
+    /**
+     * @brief Returns the parsed container configuration.
+     *
+     * Triggers readConfigFile() first if the config hasn't been loaded yet. Always returns a valid
+     * ContainerConfig, even if nothing was found or a critical error was emitted (in which case it
+     * will simply be empty).
+     */
+    [[nodiscard]] std::optional<ContainerConfig> containers();
     [[nodiscard]] bool isLoaded();
+
 public slots:
     /**
-     * @brief reads the config file and stores it in the application memory
+     * @brief reads the config file and stores the raw YAML node in application memory
      *
      * This function attempts to read the application config file and store its contents. If the file is not
      * found, the required folders and a template placeholder is placed.
      *
-     * Operations are asynchronous, and handled by the Qt Event Loop. Once they are complete, one
-     * of the following signals are emitted:
+     * This is a no-op if the config file has already been read (see isLoaded()).
+     *
+     * Once complete, one of the following signals is emitted:
      * - preferencesUpdated()
      * - criticalError()
      */
@@ -50,11 +43,10 @@ private:
     static QString defaultConfig;
     // attributes
     bool m_isLoaded = false;
-    QList<ContainerSpec> m_containers;
-    QSet<QString> m_container_names;
+    YAML::Node m_configNode;
     QString m_config_path;
 signals:
-    void preferencesUpdated();
+    void configLoaded();
     void criticalError();
 };
 
