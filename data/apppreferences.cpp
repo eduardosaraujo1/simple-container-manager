@@ -5,26 +5,34 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 
-const QList<AppPreferences::ContainerSpec>& AppPreferences::containers() const {
+const QList<AppPreferences::ContainerSpec> &AppPreferences::containers() const
+{
     return m_containers;
 }
-const QSet<QString>& AppPreferences::containerNames() const {
+const QSet<QString> &AppPreferences::containerNames() const
+{
     return m_container_names;
 }
-bool AppPreferences::hasContainers() {
+bool AppPreferences::hasContainers()
+{
     return !m_containers.isEmpty();
 }
-bool AppPreferences::isLoaded() {
-    return m_is_loaded;
+bool AppPreferences::isLoaded()
+{
+    return m_isLoaded;
 }
 
-namespace {
-    bool setupConfigDirectory(const QString &configFilePath) {
+namespace
+{
+    bool setupConfigDirectory(const QString &configFilePath)
+    {
         const QFileInfo info(configFilePath);
         const QDir dir = info.dir();
 
-        if (! dir.exists()) {
-            if (! dir.mkpath(".")) {
+        if (!dir.exists())
+        {
+            if (!dir.mkpath("."))
+            {
                 qWarning() << "setupConfigDirectory: the \"make directory\" operation has failed; interrupting process\n"
                            << "Config path: " << configFilePath << "\n";
                 return false;
@@ -34,24 +42,28 @@ namespace {
         return true;
     }
 
-    void writeConfigFile(const QString &content, const QString &filePath) {
-        if (! setupConfigDirectory(filePath)) {
+    void writeConfigFile(const QString &content, const QString &filePath)
+    {
+        if (!setupConfigDirectory(filePath))
+        {
             qWarning() << "writeConfigFile: config folder setup failed; interrupting config file write process\n"
                        << "Config path: " << filePath << "\n"
-                   << "Content: " << content;
+                       << "Content: " << content;
             return;
         }
 
         QFile file(filePath);
 
-        if (! file.open(QFile::ReadWrite | QFile::Truncate)) {
+        if (!file.open(QFile::ReadWrite | QFile::Truncate))
+        {
             qWarning() << "writeConfigFile: failed to open file resource for writing; interrupting config file write process\n"
                        << "Config path: " << filePath << "\n"
                        << "Content: " << content;
             return;
         }
 
-        if (file.write(content.toUtf8()) == -1) {
+        if (file.write(content.toUtf8()) == -1)
+        {
             qWarning() << "writeConfigFile: failed to write config content to config file.\n"
                        << "Config path: " << filePath;
         }
@@ -59,12 +71,15 @@ namespace {
         file.close();
     }
 
-    std::optional<YAML::Node> readYAMLFile(QFile &file) {
-        if (! file.exists()) {
+    std::optional<YAML::Node> readYAMLFile(QFile &file)
+    {
+        if (!file.exists())
+        {
             qWarning() << "readYAMLFile: file does not exist; interrupting YAML parsing";
             return std::nullopt;
         }
-        if (! file.open(QFile::ReadOnly)) {
+        if (!file.open(QFile::ReadOnly))
+        {
             qWarning() << "readYAMLFile: failed to open file; interrupting YAML parsing";
             return std::nullopt;
         }
@@ -72,19 +87,25 @@ namespace {
         const QByteArray fileContents = file.readAll();
         file.close();
 
-        try {
+        try
+        {
             YAML::Node node = YAML::Load(fileContents.toStdString());
             return node;
-        } catch (const YAML::ParserException &e) {
-            qWarning() << "readYAMLFile: YAML parser could not read the file.\nError description:"  << e.what();
-        } catch (const std::exception &e) {
-            qWarning() << "readYAMLFile: An unexpected error has occurred.\nError description:"  << e.what();
+        }
+        catch (const YAML::ParserException &e)
+        {
+            qWarning() << "readYAMLFile: YAML parser could not read the file.\nError description:" << e.what();
+        }
+        catch (const std::exception &e)
+        {
+            qWarning() << "readYAMLFile: An unexpected error has occurred.\nError description:" << e.what();
         }
 
         return std::nullopt;
     }
 
-    QString stringifyNode(const YAML::Node &node) {
+    QString stringifyNode(const YAML::Node &node)
+    {
         std::stringstream ss;
         ss << node;
 
@@ -93,15 +114,18 @@ namespace {
 
     std::optional<QList<AppPreferences::ContainerSpec>> parseContainerPreferences(const YAML::Node &config)
     {
-        if (!(config.IsDefined() && config["containers"])) {
+        if (!(config.IsDefined() && config["containers"]))
+        {
             qWarning().noquote() << "parseContainerPreferences: could not find `containers` configuration key in parsed config node.\n"
-                                    "Raw node format:\n" << stringifyNode(config);
+                                    "Raw node format:\n"
+                                 << stringifyNode(config);
             return std::nullopt;
         }
 
         const YAML::Node containers = config["containers"];
 
-        if (!containers.IsSequence()) {
+        if (!containers.IsSequence())
+        {
             qWarning() << "parseContainerPreferences: `containers` key is defined but is not a sequence.";
             return std::nullopt;
         }
@@ -110,10 +134,12 @@ namespace {
         // [SENIOR OBSERVATION] Pre-allocate space in the QList to minimize transient heap re-allocations
         list.reserve(static_cast<qsizetype>(containers.size()));
 
-        for (size_t i = 0; i < containers.size(); ++i) {
+        for (size_t i = 0; i < containers.size(); ++i)
+        {
             const YAML::Node item = containers[i];
 
-            if (!item["name"] || !item["label"]) {
+            if (!item["name"] || !item["label"])
+            {
                 qWarning() << "[ApplicationPreferences] Skipping entry at index" << i
                            << "due to missing required 'name' or 'label' keys.";
                 continue;
@@ -125,11 +151,10 @@ namespace {
             const QString containerAction = item["action"] ? QString::fromStdString(item["action"].as<std::string>()) : QString();
 
             AppPreferences::ContainerSpec spec{
-                .name   = containerName,
-                .label  = containerLabel,
-                .icon   = containerIcon,
-                .action = containerAction
-            };
+                .name = containerName,
+                .label = containerLabel,
+                .icon = containerIcon,
+                .action = containerAction};
 
             list.append(spec);
         }
@@ -143,7 +168,8 @@ namespace {
         // [SENIOR OBSERVATION] Pre-allocate space in the QSet to minimize transient heap re-allocations
         indexSet.reserve(list.size());
 
-        for (const auto &spec : list) {
+        for (const auto &spec : list)
+        {
             indexSet.insert(spec.name);
         }
 
@@ -170,33 +196,41 @@ AppPreferences::AppPreferences(QObject *parent)
     : QObject{parent}
 {
     m_config_path = QStandardPaths::writableLocation(
-            QStandardPaths::AppConfigLocation)
-        % "/preferences.yaml";
+                        QStandardPaths::AppConfigLocation) %
+                    "/preferences.yaml";
 }
 
-void AppPreferences::readConfigFile() {
+void AppPreferences::readConfigFile()
+{
     QFile file(m_config_path);
     YAML::Node rootNode;
 
-    if (file.exists()) {
-        if (auto result = readYAMLFile(file)) {
+    if (file.exists())
+    {
+        if (auto result = readYAMLFile(file))
+        {
             rootNode = result.value();
-        } else {
-            qCritical() << "readConfigFile: failed to read config yaml file; emitting crash signal";
+        }
+        else
+        {
+            qCritical() << "[AppPreferences] Failed to read config yaml file. Emitting crash signal";
             emit criticalError();
             return;
         }
-    } else {
-        qWarning() << "readConfigFile: preferences.yaml was not found; attempting to write default file";
+    }
+    else
+    {
+        qWarning() << "[AppPreferences] Preferences.yaml was not found. Attempting to write default file";
         writeConfigFile(AppPreferences::defaultConfig, m_config_path);
         rootNode = YAML::Load(AppPreferences::defaultConfig.toStdString());
     }
 
-    if (auto result = parseContainerPreferences(rootNode)) {
+    if (auto result = parseContainerPreferences(rootNode))
+    {
         m_containers = result.value();
         m_container_names = createContainerNameIndex(m_containers);
     }
 
-    m_is_loaded = true;
+    m_isLoaded = true;
     emit preferencesUpdated();
 }

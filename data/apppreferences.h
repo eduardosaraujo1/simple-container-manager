@@ -14,21 +14,22 @@ class AppPreferences : public QObject
 {
     Q_OBJECT
 public:
-    struct ContainerSpec {
+    struct ContainerSpec
+    {
         QString name;   // required
         QString label;  // required
         QString icon;   // nullable
         QString action; // nullable
 
-        QString toString() const {
-            return "ContainerSpec[name=\"" % name % "\",label=\"" % label
-                   % "\",icon=\"" % icon % "\",action=\"" % action % "\"]";
+        QString toString() const
+        {
+            return "ContainerSpec[name=\"" % name % "\",label=\"" % label % "\",icon=\"" % icon % "\",action=\"" % action % "\"]";
         }
     };
     explicit AppPreferences(QObject *parent = nullptr);
     ~AppPreferences() = default;
-    [[nodiscard]] const QList<ContainerSpec>& containers() const;
-    [[nodiscard]] const QSet<QString>& containerNames() const;
+    [[nodiscard]] const QList<ContainerSpec> &containers() const;
+    [[nodiscard]] const QSet<QString> &containerNames() const;
     [[nodiscard]] bool hasContainers();
     [[nodiscard]] bool isLoaded();
 public slots:
@@ -44,12 +45,11 @@ public slots:
      * - criticalError()
      */
     void readConfigFile();
+
 private:
     static QString defaultConfig;
-    /** @brief parses the YAML node and stores container preferences in memory. */
-    void storeContainerPreferences(const YAML::Node &config);
-    //attributes
-    bool m_is_loaded = false;
+    // attributes
+    bool m_isLoaded = false;
     QList<ContainerSpec> m_containers;
     QSet<QString> m_container_names;
     QString m_config_path;

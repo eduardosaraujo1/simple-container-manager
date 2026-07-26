@@ -38,7 +38,7 @@ public:
      * @brief Ensures the components responsible auto container status refresh
      * are up.
      */
-    [[nodiscard]] bool autoRefreshEnabled() const;
+    [[nodiscard]] bool isAutoRefreshEnabled() const;
 
 public slots:
     /** @brief Requests an up-to-date list of tracked containers from Docker. */
@@ -72,9 +72,9 @@ private slots:
     void onEventStreamError(DockerEventStream::StreamError error);
 
 private:
-    DockerCLI* m_cli;
-    DockerEventStream* m_eventStream;
-    AppPreferences* m_appPrefs;
+    DockerCLI *m_cli;
+    DockerEventStream *m_eventStream;
+    AppPreferences *m_appPrefs;
 
     QHash<QString, AppPreferences::ContainerSpec> m_containers; // name -> spec
 };
