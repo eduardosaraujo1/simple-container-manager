@@ -15,65 +15,68 @@
 /**
  * @brief The ContainerService class encapsulates all Docker-related
  * infrastructure (DockerCLI + DockerEventStream) and exposes a
- * higher-level API for container operations and state synchronization.
+ * higher-level API for container operations, state synchronization,
+ * and running user-defined container actions.
  *
  * It owns all container-related workflows, timing, automatic refresh
  * behavior and Docker interactions, so that presentation code (e.g.
- * MainWindow) never has to talk to DockerCLI or DockerEventStream
- * directly.
+ * MainWindow) never has to talk to DockerCLI, DockerEventStream, or
+ * QProcess directly.
  */
 class ContainerService : public QObject
 {
     Q_OBJECT
 public:
-    explicit ContainerService(QObject *parent = nullptr);
+    explicit ContainerService(
+        DockerCLI &cli,
+        DockerEventStream &str,
+        AppPreferences &prefs,
+        QObject *parent = nullptr);
     ~ContainerService();
 
     /**
-     * @brief Configures the service with the containers it should track.
-     *
-     * Must be called once, before start()/refreshContainers() are used.
+     * @brief Ensures the components responsible auto container status refresh
+     * are up.
      */
-    void initialize(const QList<AppPreferences::ContainerSpec> &containers);
-
-    [[nodiscard]] bool isInitialized() const { return m_initialized; }
+    [[nodiscard]] bool autoRefreshEnabled() const;
 
 public slots:
-    /** @brief Starts the Docker event stream and performs an initial refresh. */
-    void start();
-    /** @brief Stops the Docker event stream. */
-    void stop();
-
     /** @brief Requests an up-to-date list of tracked containers from Docker. */
     void refreshContainers();
 
-    /** @brief Starts the given (tracked) container. */
+    /** @brief Starts the given container. */
     void startContainer(const QString &containerName);
-    /** @brief Stops the given (tracked) container. */
+    /** @brief Stops the given container. */
     void stopContainer(const QString &containerName);
+
+    /**
+     * @brief Runs the configured action command for the given container.
+     *
+     * Looks up containerName's ContainerSpec, and if it has a non-empty
+     * action, spawns it as a detached QProcess (disowned from the app so
+     * it keeps running independently of MainWindow's lifetime). No-ops if
+     * the container is unknown or has no configured action.
+     */
+    void runAction(const QString &containerName);
 
 signals:
     /** @brief Emitted whenever a fresh snapshot of tracked containers is available. */
     void containersUpdated(const QList<ContainerInfo> &containers);
-    /** @brief Emitted when Docker interaction fails (CLI parse error, event stream error, etc.). */
-    void errorOccurred(const QString &message);
+    /** @brief Emitted when Docker Stream, responsible for automatically updating containers, fails */
+    void streamErrorOccurred(DockerEventStream::StreamError error);
 
 private slots:
     void onCliContainersUpdated(const QList<ContainerInfo> &containers);
-    void onCliParseErrorOccurred();
 
     void onDockerEvent(const DockerEvent &event);
     void onEventStreamError(DockerEventStream::StreamError error);
 
 private:
-    [[nodiscard]] QString containerIdForName(const QString &containerName) const;
+    DockerCLI* m_cli;
+    DockerEventStream* m_eventStream;
+    AppPreferences* m_appPrefs;
 
-    DockerCLI m_cli;
-    DockerEventStream m_eventStream;
-
-    bool m_initialized = false;
-    QStringList m_containerNames;
-    QHash<QString, QString> m_nameToId; // populated as refreshes come in
+    QHash<QString, AppPreferences::ContainerSpec> m_containers; // name -> spec
 };
 
 #endif // CONTAINERSERVICE_H

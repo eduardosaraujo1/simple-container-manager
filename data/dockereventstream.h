@@ -15,8 +15,7 @@ public:
     {
         FailedToStart,
         ProcessCrashed,
-        ProcessError,
-        ParseError,
+        ProcessError
     };
 
 public:

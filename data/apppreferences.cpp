@@ -1,5 +1,6 @@
 #include "apppreferences.h"
 #include <optional>
+#include <sstream>
 #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
@@ -191,8 +192,6 @@ void AppPreferences::readConfigFile() {
         rootNode = YAML::Load(AppPreferences::defaultConfig.toStdString());
     }
 
-    // Note for future self (remove in production): if this fails, it should still emit "preferencesUpdated"
-    // for scalability: if more preferences are added here, then the partial updaate should be accepted
     if (auto result = parseContainerPreferences(rootNode)) {
         m_containers = result.value();
         m_container_names = createContainerNameIndex(m_containers);
