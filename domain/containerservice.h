@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QStringList>
 
-#include <data/data-objects/containerconfig>
+#include <data/data-objects/containerconfig.h>
 #include <data/data-objects/containerinfo.h>
 #include <data/data-objects/dockerevent.h>
 #include <data/dockercli.h>
