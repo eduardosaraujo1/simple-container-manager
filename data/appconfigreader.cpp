@@ -18,7 +18,7 @@ QString AppConfigReader::defaultConfig =
     "#    icon: /path/to/icon.svg\n"
     "#    action: xdg-open http://localhost/phpmyadmin\n";
 
-std::optional<ContainerConfig> AppConfigReader::readContainers()
+std::optional<ConfiguredContainers> AppConfigReader::readContainers()
 {
     if (!m_isLoaded)
     {
@@ -26,7 +26,7 @@ std::optional<ContainerConfig> AppConfigReader::readContainers()
         return std::nullopt;
     }
 
-    return ContainerConfig::fromYAML(m_configNode);
+    return ConfiguredContainers::fromYAML(m_configNode);
 }
 
 bool AppConfigReader::isCached()

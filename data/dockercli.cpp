@@ -7,7 +7,7 @@
 #include <optional>
 
 namespace {
-    std::optional<ContainerInfo> parseContainerInfo(const QByteArray &rawData) {
+    std::optional<ContainerState> parseContainerInfo(const QByteArray &rawData) {
         QJsonParseError jsonParseError;
         const QJsonDocument doc = QJsonDocument::fromJson(rawData, &jsonParseError);
 
@@ -39,15 +39,15 @@ namespace {
             return std::nullopt;
         }
 
-        const ContainerInfo::Status statusEnum
-            = ContainerInfo::statusFromString(status.toString());
+        const ContainerState::Status statusEnum
+            = ContainerState::statusFromString(status.toString());
 
-        if (statusEnum == ContainerInfo::Status::Unknown) {
+        if (statusEnum == ContainerState::Status::Unknown) {
             qWarning() << "parseContainerInfoString: Status \""
                        << status.toString() << "\" could not be identified. Defaulting to Status::Unknown";
         }
 
-        return ContainerInfo{
+        return ContainerState{
             id.toString(),
             name.toString(),
             statusEnum
@@ -102,7 +102,7 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     const QList<QByteArray> lines = output.split('\n');
 
     bool hasErrors = false;
-    QList<ContainerInfo> finalResult;
+    QList<ContainerState> finalResult;
 
     for (const QByteArray &line : lines) {
         if (line.isEmpty()) continue;

@@ -1,4 +1,4 @@
-#include "containerconfig.h"
+#include "configuredcontainers.h"
 #include <sstream>
 #include <QDebug>
 
@@ -13,7 +13,7 @@ namespace
     }
 }
 
-std::optional<ContainerConfig> ContainerConfig::fromYAML(const YAML::Node &node)
+std::optional<ConfiguredContainers> ConfiguredContainers::fromYAML(const YAML::Node &node)
 {
 
     if (!(node.IsDefined() && node["containers"]))
@@ -33,7 +33,7 @@ std::optional<ContainerConfig> ContainerConfig::fromYAML(const YAML::Node &node)
     }
 
     // [SENIOR OBSERVATION] Pre-allocate space in the QHash to minimize transient heap re-allocations
-    ContainerConfig config;
+    ConfiguredContainers config;
     config.m_containers.reserve(static_cast<qsizetype>(containers.size()));
 
     for (size_t i = 0; i < containers.size(); ++i)
@@ -57,23 +57,23 @@ std::optional<ContainerConfig> ContainerConfig::fromYAML(const YAML::Node &node)
                                                   ? std::make_optional(QString::fromStdString(item["action"].as<std::string>()))
                                                   : std::nullopt;
 
-        config.m_containers.insert(name, ContainerSpec(name, label, icon, action));
+        config.m_containers.insert(name, ContainerDefinition(name, label, icon, action));
     }
 
     return config;
 }
 
-const QHash<QString, ContainerSpec> &ContainerConfig::containers() const
+const QHash<QString, ContainerDefinition> &ConfiguredContainers::containers() const
 {
     return m_containers;
 }
 
-QSet<QString> ContainerConfig::containerNames() const
+QSet<QString> ConfiguredContainers::containerNames() const
 {
     return QSet<QString>(m_containers.keyBegin(), m_containers.keyEnd());
 }
 
-bool ContainerConfig::hasContainers() const
+bool ConfiguredContainers::hasContainers() const
 {
     return !m_containers.isEmpty();
 }

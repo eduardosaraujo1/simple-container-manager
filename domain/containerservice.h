@@ -6,8 +6,8 @@
 #include <QObject>
 #include <QStringList>
 
-#include <data/data-objects/containerconfig.h>
-#include <data/data-objects/containerinfo.h>
+#include <data/data-objects/configuredcontainers.h>
+#include <data/data-objects/containerstate.h>
 #include <data/data-objects/dockerevent.h>
 #include <data/dockercli.h>
 #include <data/dockereventstream.h>
@@ -29,7 +29,7 @@ public:
     explicit ContainerService(
         DockerCLI &cli,
         DockerEventStream &stream,
-        ContainerConfig &prefs,
+        ConfiguredContainers &containerState,
         QObject *parent = nullptr);
     ~ContainerService();
 
@@ -60,12 +60,12 @@ public slots:
 
 signals:
     /** @brief Emitted whenever a fresh snapshot of tracked containers is available. */
-    void containersUpdated(const QList<ContainerInfo> &containers);
+    void containersUpdated(const QList<ContainerState> &containers);
     /** @brief Emitted when Docker Stream, responsible for automatically updating containers, fails */
     void streamStatusUpdated(bool isActive);
 
 private slots:
-    void onCliContainersUpdated(const QList<ContainerInfo> &containers);
+    void onCliContainersUpdated(const QList<ContainerState> &containers);
 
     void onDockerEvent(const DockerEvent &event);
     void onEventStreamStart();
@@ -74,7 +74,7 @@ private slots:
 private:
     DockerCLI *m_cli;
     DockerEventStream *m_eventStream;
-    ContainerConfig *m_containerConfig;
+    ConfiguredContainers *m_containerConfig;
 };
 
 #endif // CONTAINERSERVICE_H

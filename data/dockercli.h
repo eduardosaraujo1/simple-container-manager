@@ -5,7 +5,7 @@
 #include <QProcess>
 #include <QString>
 #include <QStringList>
-#include <data/data-objects/containerinfo.h>
+#include <data/data-objects/containerstate.h>
 
 class DockerCLI : public QObject
 {
@@ -27,7 +27,7 @@ private:
 private slots:
     void onProcessDone(int exitCode, QProcess::ExitStatus status);
 signals:
-    void containersUpdated(const QList<ContainerInfo> &containers);
+    void containersUpdated(const QList<ContainerState> &containers);
     void parseErrorOccurred();
 };
 

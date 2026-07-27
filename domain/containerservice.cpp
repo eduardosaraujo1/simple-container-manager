@@ -4,14 +4,14 @@
 #include <QProcess>
 #include <QSet>
 
-#include <data/data-objects/appprefs/containerspec.h>
+#include <data/data-objects/containerdefinition.h>
 
 ContainerService::ContainerService(
     DockerCLI &cli,
     DockerEventStream &stream,
-    ContainerConfig &prefs,
+    ConfiguredContainers &containers,
     QObject *parent)
-    : QObject(parent), m_cli(&cli), m_eventStream(&stream), m_containerConfig(&prefs)
+    : QObject(parent), m_cli(&cli), m_eventStream(&stream), m_containerConfig(&containers)
 {
     connect(m_cli, &DockerCLI::containersUpdated,
             this, &ContainerService::onCliContainersUpdated);
@@ -59,7 +59,7 @@ void ContainerService::stopContainer(const QString &containerName)
 
 void ContainerService::runAction(const QString &containerName)
 {
-    const QHash<QString, ContainerSpec> &containers = m_containerConfig->containers();
+    const QHash<QString, ContainerDefinition> &containers = m_containerConfig->containers();
     const auto it = containers.constFind(containerName);
 
     if (it == containers.constEnd())
@@ -99,7 +99,7 @@ void ContainerService::runAction(const QString &containerName)
     }
 }
 
-void ContainerService::onCliContainersUpdated(const QList<ContainerInfo> &containers)
+void ContainerService::onCliContainersUpdated(const QList<ContainerState> &containers)
 {
     emit containersUpdated(containers);
 }

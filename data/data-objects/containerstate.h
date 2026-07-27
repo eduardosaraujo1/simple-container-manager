@@ -1,9 +1,9 @@
-#ifndef CONTAINERINFO_H
-#define CONTAINERINFO_H
+#ifndef CONTAINERSTATE_H
+#define CONTAINERSTATE_H
 
 #include <QString>
 
-class ContainerInfo
+class ContainerState
 {
 public:
     enum class Status
@@ -22,13 +22,13 @@ public:
 
     static QString statusToString(const Status &status);
 private:
-    QString m_id;
     QString m_name;
+    QString m_id;
     Status m_status = Status::Unknown;
 public:
-    ContainerInfo() = default;
+    ContainerState() = default;
 
-    ContainerInfo(const QString &id, const QString &name, Status status);
+    ContainerState(const QString &id, const QString &name, Status status);
 
     const QString& id() const {
         return this->m_id;
@@ -45,4 +45,4 @@ public:
     QString toString() const;
 };
 
-#endif // CONTAINERINFO_H
+#endif // CONTAINERSTATE_H

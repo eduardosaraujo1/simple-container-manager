@@ -1,0 +1,40 @@
+#ifndef CONFIGUREDCONTAINERS_H
+#define CONFIGUREDCONTAINERS_H
+
+#include <QHash>
+#include <QSet>
+#include <QString>
+#include <optional>
+#include <yaml-cpp/yaml.h>
+#include "containerdefinition.h"
+
+/**
+ * @brief The ConfiguredContainers class represents the fully-parsed set of containers defined
+ * in the user's preferences file.
+ *
+ * Instances are produced via the static fromYAML() factory, which is responsible for all
+ * YAML parsing/validation concerns. This keeps that responsibility out of AppPreferences,
+ * which now only deals with reading the file and handing off the raw YAML::Node.
+ */
+class ConfiguredContainers
+{
+public:
+    /**
+     * @brief Builds a ConfiguredContainers from a parsed YAML root node.
+     *
+     * Missing or malformed entries are skipped with a warning; a missing/invalid
+     * `containers` key results in an empty (but valid) ConfiguredContainers.
+     */
+    [[nodiscard]] static std::optional<ConfiguredContainers> fromYAML(const YAML::Node &node);
+
+    [[nodiscard]] const QHash<QString, ContainerDefinition> &containers() const;
+    [[nodiscard]] QSet<QString> containerNames() const;
+    [[nodiscard]] bool hasContainers() const;
+
+private:
+    ConfiguredContainers() = default;
+
+    QHash<QString, ContainerDefinition> m_containers; // name -> spec
+};
+
+#endif // CONFIGUREDCONTAINERS_H

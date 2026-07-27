@@ -8,7 +8,7 @@ ContainerListWidget::ContainerListWidget(QWidget *parent)
 }
 
 void ContainerListWidget::initialize(
-    const QList<ContainerSpec> &containers)
+    const QList<ContainerDefinition> &containers)
 {
     if (m_initialized)
     {
@@ -16,7 +16,7 @@ void ContainerListWidget::initialize(
         return;
     }
 
-    for (const ContainerSpec &spec : containers)
+    for (const ContainerDefinition &spec : containers)
     {
         ContainerRowWidget *row = new ContainerRowWidget(
             spec.label(),
@@ -58,9 +58,9 @@ ContainerListWidget::~ContainerListWidget()
 }
 
 void ContainerListWidget::refreshContainerInfo(
-    const QList<ContainerInfo> &containers)
+    const QList<ContainerState> &containers)
 {
-    for (const ContainerInfo &container : containers)
+    for (const ContainerState &container : containers)
     {
         auto it = m_rows.find(container.name());
 
@@ -75,24 +75,24 @@ void ContainerListWidget::refreshContainerInfo(
 }
 
 ContainerRowWidget::Status
-ContainerListWidget::mapStatus(ContainerInfo::Status status)
+ContainerListWidget::mapStatus(ContainerState::Status status)
 {
     switch (status)
     {
 
-    case ContainerInfo::Status::Running:
+    case ContainerState::Status::Running:
         return ContainerRowWidget::Status::Running;
 
-    case ContainerInfo::Status::Created:
-    case ContainerInfo::Status::Exited:
+    case ContainerState::Status::Created:
+    case ContainerState::Status::Exited:
         return ContainerRowWidget::Status::Stopped;
-    case ContainerInfo::Status::Restarting:
+    case ContainerState::Status::Restarting:
         return ContainerRowWidget::Status::Loading;
 
-    case ContainerInfo::Status::Paused:
-    case ContainerInfo::Status::Removing:
-    case ContainerInfo::Status::Dead:
-    case ContainerInfo::Status::Unknown:
+    case ContainerState::Status::Paused:
+    case ContainerState::Status::Removing:
+    case ContainerState::Status::Dead:
+    case ContainerState::Status::Unknown:
     default:
         return ContainerRowWidget::Status::Error;
     }

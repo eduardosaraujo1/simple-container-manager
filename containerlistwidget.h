@@ -5,8 +5,8 @@
 #include <QWidget>
 
 #include <data/appconfigreader.h>
-#include <data/data-objects/containerinfo.h>
-#include <data/data-objects/appprefs/containerspec.h>
+#include <data/data-objects/containerstate.h>
+#include <data/data-objects/appprefs/containerdefinition.h>
 #include "containerrowwidget.h"
 
 namespace Ui {
@@ -21,16 +21,16 @@ public:
     explicit ContainerListWidget(QWidget *parent = nullptr);
     ~ContainerListWidget();
 
-    void initialize(const QList<ContainerSpec> &containers);
+    void initialize(const QList<ContainerDefinition> &containers);
 public slots:
-    void refreshContainerInfo(const QList<ContainerInfo> &containers);
+    void refreshContainerInfo(const QList<ContainerState> &containers);
 
 signals:
     void containerToggle(const QString &containerName, bool isStartCommand);
     void containerAction(const QString &containerName);
 
 private:
-    static ContainerRowWidget::Status mapStatus(ContainerInfo::Status status);
+    static ContainerRowWidget::Status mapStatus(ContainerState::Status status);
 
     Ui::ContainerListWidget *ui;
 

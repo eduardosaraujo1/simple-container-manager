@@ -1,10 +1,10 @@
-#include "containerinfo.h"
+#include "containerstate.h"
 #include <QJsonObject>
 
-ContainerInfo::ContainerInfo(const QString &id, const QString &name, Status status)
+ContainerState::ContainerState(const QString &id, const QString &name, Status status)
     : m_id(id), m_name(name), m_status(status) {}
 
-ContainerInfo::Status ContainerInfo::statusFromString(QStringView str) {
+ContainerState::Status ContainerState::statusFromString(QStringView str) {
     if (str.compare(u"running", Qt::CaseInsensitive) == 0)
         return Status::Running;
     if (str.compare(u"exited", Qt::CaseInsensitive) == 0)
@@ -23,7 +23,7 @@ ContainerInfo::Status ContainerInfo::statusFromString(QStringView str) {
     return Status::Unknown;
 }
 
-QString ContainerInfo::statusToString(const ContainerInfo::Status &status) {
+QString ContainerState::statusToString(const ContainerState::Status &status) {
     if (status == Status::Running)
         return "running";
     if (status == Status::Exited)
@@ -42,13 +42,13 @@ QString ContainerInfo::statusToString(const ContainerInfo::Status &status) {
     return "unknown";
 }
 
-QString ContainerInfo::toString() const {
+QString ContainerState::toString() const {
     return "ContainerInfo[id=\"" %
            this->id() % "\",name=\"" %
            this->name() % "\",status=\"" %
            statusToString(this->status()) % "\"]";
 }
 
-bool ContainerInfo::isValid() const {
+bool ContainerState::isValid() const {
     return !(m_id.isEmpty() || m_name.isEmpty());
 }

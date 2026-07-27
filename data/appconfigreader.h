@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <yaml-cpp/yaml.h>
-#include "data-objects/appprefs/containerconfig.h"
+#include "data-objects/appprefs/configuredcontainers.h"
 #include <optional>
 
 class AppConfigReader : public QObject
@@ -18,10 +18,10 @@ public:
      * @brief Returns the parsed container configuration.
      *
      * Triggers readConfigFile() first if the config hasn't been loaded yet. Always returns a valid
-     * ContainerConfig, even if nothing was found or a critical error was emitted (in which case it
+     * ConfiguredContainers, even if nothing was found or a critical error was emitted (in which case it
      * will simply be empty).
      */
-    [[nodiscard]] std::optional<ContainerConfig> readContainers();
+    [[nodiscard]] std::optional<ConfiguredContainers> readContainers();
     [[nodiscard]] bool isCached();
 
 public slots:

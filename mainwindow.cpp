@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <data/appconfigreader.h>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,7 +12,12 @@ MainWindow::MainWindow(QWidget *parent)
     AppConfigReader prefs{this};
     connect(&prefs, &AppConfigReader::configLoaded, [&, this]() {
         if (auto config = prefs.readContainers()) {
-            ui->containerList->initialize(config.containers());
+            ui->containerList->initialize(config->containers().values());
+        } else {
+            QMessageBox msgBox(this);
+            msgBox.setText("Unknown error has occurred.");
+            msgBox.exec();
+            this->close();
         }
     });
     prefs.readConfigFile();

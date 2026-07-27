@@ -1,6 +1,6 @@
-#include "containerspec.h"
+#include "containerdefinition.h"
 
-ContainerSpec::ContainerSpec(
+ContainerDefinition::ContainerDefinition(
     const QString &name,
     const QString &label,
     const std::optional<QString> &icon,
@@ -12,27 +12,27 @@ ContainerSpec::ContainerSpec(
 {
 }
 
-QString ContainerSpec::name() const
+QString ContainerDefinition::name() const
 {
     return m_name;
 }
 
-QString ContainerSpec::label() const
+QString ContainerDefinition::label() const
 {
     return m_label;
 }
 
-std::optional<QString> ContainerSpec::icon() const
+std::optional<QString> ContainerDefinition::icon() const
 {
     return m_icon;
 }
 
-std::optional<QString> ContainerSpec::action() const
+std::optional<QString> ContainerDefinition::action() const
 {
     return m_action;
 }
 
-QString ContainerSpec::toString() const
+QString ContainerDefinition::toString() const
 {
     return QString("ContainerSpec[name=\"%1\", label=\"%2\", icon=%3, action=%4]")
         .arg(m_name)

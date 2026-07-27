@@ -1,13 +1,13 @@
-#ifndef CONTAINERSPEC_H
-#define CONTAINERSPEC_H
+#ifndef CONTAINERDEFINITION_H
+#define CONTAINERDEFINITION_H
 
 #include <QString>
 #include <optional>
 
-class ContainerSpec
+class ContainerDefinition
 {
 public:
-    explicit ContainerSpec(
+    explicit ContainerDefinition(
         const QString &name,
         const QString &label,
         const std::optional<QString> &icon = std::nullopt,
@@ -27,4 +27,4 @@ private:
     std::optional<QString> m_action;
 };
 
-#endif // CONTAINERSPEC_H
+#endif // CONTAINERDEFINITION_H
