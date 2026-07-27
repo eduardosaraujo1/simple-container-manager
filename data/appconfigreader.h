@@ -1,5 +1,5 @@
-#ifndef APPPREFERENCES_H
-#define APPPREFERENCES_H
+#ifndef APPCONFIGREADER_H
+#define APPCONFIGREADER_H
 
 #include <QObject>
 #include <QString>
@@ -7,12 +7,12 @@
 #include "data-objects/appprefs/containerconfig.h"
 #include <optional>
 
-class AppPreferences : public QObject
+class AppConfigReader : public QObject
 {
     Q_OBJECT
 public:
-    explicit AppPreferences(QObject *parent = nullptr);
-    ~AppPreferences() = default;
+    explicit AppConfigReader(QObject *parent = nullptr);
+    ~AppConfigReader() = default;
 
     /**
      * @brief Returns the parsed container configuration.
@@ -21,8 +21,8 @@ public:
      * ContainerConfig, even if nothing was found or a critical error was emitted (in which case it
      * will simply be empty).
      */
-    [[nodiscard]] std::optional<ContainerConfig> containers();
-    [[nodiscard]] bool isLoaded();
+    [[nodiscard]] std::optional<ContainerConfig> readContainers();
+    [[nodiscard]] bool isCached();
 
 public slots:
     /**
@@ -44,10 +44,10 @@ private:
     // attributes
     bool m_isLoaded = false;
     YAML::Node m_configNode;
-    QString m_config_path;
+    QString m_configPath;
 signals:
     void configLoaded();
     void criticalError();
 };
 
-#endif // APPPREFERENCES_H
+#endif // APPCONFIGREADER_H

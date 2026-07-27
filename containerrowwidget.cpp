@@ -2,30 +2,20 @@
 #include "ui_containerrowwidget.h"
 
 ContainerRowWidget::ContainerRowWidget(
-    const QString &iconPath,
     const QString &label,
-    Status status,
-    bool hasAction,
     QWidget *parent)
     : QWidget(parent),
       ui(new Ui::ContainerRowWidget)
 {
     ui->setupUi(this);
 
-    setIcon(iconPath);
-    setLabel(label);
-    setStatus(status);
-
     connect(ui->toggle, &QPushButton::clicked,
             this, &ContainerRowWidget::onToggleClicked);
 
-    if (hasAction)
-    {
-        connect(ui->admin, &QPushButton::clicked,
-                this, &ContainerRowWidget::onAdminClicked);
-    }
+    connect(ui->admin, &QPushButton::clicked,
+        this, &ContainerRowWidget::onAdminClicked);
 
-    ui->admin->setEnabled(hasAction);
+    setLabel(label);
 }
 
 ContainerRowWidget::~ContainerRowWidget()
@@ -43,11 +33,6 @@ void ContainerRowWidget::onToggleClicked()
 void ContainerRowWidget::onAdminClicked()
 {
     emit adminRequested();
-}
-
-void ContainerRowWidget::setAction(const QString &action)
-{
-    m_action = action;
 }
 
 void ContainerRowWidget::setLabel(const QString &label)
@@ -82,6 +67,11 @@ void ContainerRowWidget::setIcon(const QString &iconPath)
     ui->icon->setPixmap(
         pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
+
+void ContainerRowWidget::setHasAction(bool hasAction) {
+    ui->admin->setEnabled(hasAction);
+}
+
 void ContainerRowWidget::setStatus(Status status)
 {
     m_status = status;

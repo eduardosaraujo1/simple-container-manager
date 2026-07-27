@@ -8,7 +8,7 @@ ContainerListWidget::ContainerListWidget(QWidget *parent)
 }
 
 void ContainerListWidget::initialize(
-    const QList<AppPreferences::ContainerSpec> &containers)
+    const QList<ContainerSpec> &containers)
 {
     if (m_initialized)
     {
@@ -16,21 +16,16 @@ void ContainerListWidget::initialize(
         return;
     }
 
-    ui->loading->hide();
-
-    for (const auto &spec : containers)
+    for (const ContainerSpec &spec : containers)
     {
-
-        auto *row = new ContainerRowWidget(
-            spec.icon,
-            spec.label,
-            ContainerRowWidget::Status::Loading,
-            spec.action,
+        ContainerRowWidget *row = new ContainerRowWidget(
+            spec.label(),
             this);
 
-        m_rows.insert(spec.name, row);
+        const QString containerName = spec.name();
 
-        const QString containerName = spec.name;
+        // Associate the container row pointer to its parent container
+        m_rows.insert(containerName, row);
 
         connect(row,
                 &ContainerRowWidget::toggleRequested,
@@ -46,10 +41,6 @@ void ContainerListWidget::initialize(
                 this,
                 [this, containerName]()
                 {
-                    if (action.isEmpty())
-                    {
-                        qWarning() << "[ContainerListWidget] Attempted to run an empty action. This suggests a UI problem that doesn't block the user from running unset actions.";
-                    }
                     qInfo() << "[UI] Requesting to run admin command from " << containerName;
                     emit containerAction(containerName);
                 });
@@ -57,6 +48,7 @@ void ContainerListWidget::initialize(
         ui->contentsLayout->addWidget(row);
     }
 
+    ui->loading->hide();
     ui->contentsLayout->addStretch();
     m_initialized = true;
 }
@@ -68,18 +60,14 @@ ContainerListWidget::~ContainerListWidget()
 void ContainerListWidget::refreshContainerInfo(
     const QList<ContainerInfo> &containers)
 {
-    for (const auto &row : std::as_const(m_rows))
-        row->setStatus(ContainerRowWidget::Status::Stopped);
-
-    for (const auto &container : containers)
+    for (const ContainerInfo &container : containers)
     {
-
         auto it = m_rows.find(container.name());
 
-        if (it == m_rows.end())
-            // container widget not found
-            qWarning() << "refreshContainerInfo: the corresponding widget for '" << container.name() << "'' was not found. Status will not be displayed.";
-        continue;
+        if (it == m_rows.end()) {
+            qWarning() << "[UI] The corresponding widget for '" << container.name() << "'' was not found. Status will not be displayed.";
+            continue;
+        }
 
         it.value() // ContainerRowWidget
             ->setStatus(mapStatus(container.status()));

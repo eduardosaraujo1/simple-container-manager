@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <data/apppreferences.h>
+#include <data/appconfigreader.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -8,9 +8,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    AppPreferences prefs{this};
-    connect(&prefs, &AppPreferences::preferencesUpdated, [&, this]() {
-        ui->containerList->initialize(prefs.containers());
+    AppConfigReader prefs{this};
+    connect(&prefs, &AppConfigReader::configLoaded, [&, this]() {
+        if (auto config = prefs.readContainers()) {
+            ui->containerList->initialize(config.containers());
+        }
     });
     prefs.readConfigFile();
 }

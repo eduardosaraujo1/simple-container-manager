@@ -23,9 +23,11 @@ qt_add_executable(simple-container-manager
 
     data/data-objects/containerinfo.h data/data-objects/containerinfo.cpp
     data/data-objects/dockerevent.h data/data-objects/dockerevent.cpp
+    data/data-objects/appprefs/containerspec.h data/data-objects/appprefs/containerspec.cpp
+    data/data-objects/appprefs/containerconfig.h data/data-objects/appprefs/containerconfig.cpp
     data/dockercli.h data/dockercli.cpp
     data/dockereventstream.h data/dockereventstream.cpp
-    data/apppreferences.h data/apppreferences.cpp
+    data/appconfigreader.h data/appconfigreader.cpp
 
 
     domain/containerservice.h domain/containerservice.cpp

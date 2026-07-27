@@ -1,9 +1,9 @@
-#include "apppreferences.h"
+#include "appconfigreader.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
 
-QString AppPreferences::defaultConfig =
+QString AppConfigReader::defaultConfig =
     "containers:\n"
     "#  - name: php8.2-apache\n"
     "#    label: Apache com PHP\n"
@@ -18,7 +18,7 @@ QString AppPreferences::defaultConfig =
     "#    icon: /path/to/icon.svg\n"
     "#    action: xdg-open http://localhost/phpmyadmin\n";
 
-std::optional<ContainerConfig> AppPreferences::containers()
+std::optional<ContainerConfig> AppConfigReader::readContainers()
 {
     if (!m_isLoaded)
     {
@@ -29,7 +29,7 @@ std::optional<ContainerConfig> AppPreferences::containers()
     return ContainerConfig::fromYAML(m_configNode);
 }
 
-bool AppPreferences::isLoaded()
+bool AppConfigReader::isCached()
 {
     return m_isLoaded;
 }
@@ -117,22 +117,22 @@ namespace
     }
 }
 
-AppPreferences::AppPreferences(QObject *parent)
+AppConfigReader::AppConfigReader(QObject *parent)
     : QObject{parent}
 {
-    m_config_path = QStandardPaths::writableLocation(
+    m_configPath = QStandardPaths::writableLocation(
                         QStandardPaths::AppConfigLocation) %
                     "/preferences.yaml";
 }
 
-void AppPreferences::readConfigFile()
+void AppConfigReader::readConfigFile()
 {
     if (m_isLoaded)
     {
         return;
     }
 
-    QFile file(m_config_path);
+    QFile file(m_configPath);
     YAML::Node rootNode;
 
     if (file.exists())
@@ -151,8 +151,8 @@ void AppPreferences::readConfigFile()
     else
     {
         qWarning() << "[AppPreferences] Preferences.yaml was not found. Attempting to write default file";
-        writeConfigFile(AppPreferences::defaultConfig, m_config_path);
-        rootNode = YAML::Load(AppPreferences::defaultConfig.toStdString());
+        writeConfigFile(AppConfigReader::defaultConfig, m_configPath);
+        rootNode = YAML::Load(AppConfigReader::defaultConfig.toStdString());
     }
 
     m_configNode = rootNode;

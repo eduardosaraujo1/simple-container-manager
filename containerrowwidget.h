@@ -22,10 +22,7 @@ public:
     };
 
     explicit ContainerRowWidget(
-        const QString &iconPath,
         const QString &label,
-        Status status,
-        bool hasAction,
         QWidget *parent = nullptr);
 
     ~ContainerRowWidget();
@@ -33,7 +30,7 @@ public:
     void setIcon(const QString &iconPath);
     void setLabel(const QString &label);
     void setStatus(Status status);
-    void setAction(const QString &action);
+    void setHasAction(bool hasAction);
 
 signals:
     void toggleRequested(bool start);
@@ -49,6 +46,5 @@ private:
     Ui::ContainerRowWidget *ui;
 
     Status m_status;
-    QString m_action;
 };
 #endif // CONTAINERROWWIDGET_H
