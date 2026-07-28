@@ -20,13 +20,15 @@ void ContainerListWidget::initialize(
     {
         ContainerRowWidget *row = new ContainerRowWidget(
             spec.label(),
+            spec.icon(),
+            spec.hasAction(),
             this);
 
-        const QString containerName = spec.name();
-
         // Associate the container row pointer to its parent container
+        const QString containerName = spec.name();
         m_rows.insert(containerName, row);
 
+        // Setup interactions
         connect(row,
                 &ContainerRowWidget::toggleRequested,
                 this,
@@ -45,6 +47,7 @@ void ContainerListWidget::initialize(
                     emit containerAction(containerName);
                 });
 
+        // Include created widget in layout
         ui->contentsLayout->addWidget(row);
     }
 
@@ -52,6 +55,7 @@ void ContainerListWidget::initialize(
     ui->contentsLayout->addStretch();
     m_initialized = true;
 }
+
 ContainerListWidget::~ContainerListWidget()
 {
     delete ui;

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <yaml-cpp/yaml.h>
-#include "data-objects/appprefs/configuredcontainers.h"
+#include "data-objects/configuredcontainers.h"
 #include <optional>
 
 class AppConfigReader : public QObject

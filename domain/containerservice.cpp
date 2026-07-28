@@ -41,8 +41,7 @@ void ContainerService::refreshContainers()
 {
     // Only ask Docker about containers the user actually configured;
     // anything else running on the host is none of our business.
-    const QSet<QString> names = m_containerConfig->containerNames();
-    const QStringList namesFilter(names.begin(), names.end());
+    const QStringList namesFilter = m_containerConfig->containerNames();
 
     m_cli->requestContainerRefresh(namesFilter);
 }
@@ -59,31 +58,31 @@ void ContainerService::stopContainer(const QString &containerName)
 
 void ContainerService::runAction(const QString &containerName)
 {
-    const QHash<QString, ContainerDefinition> &containers = m_containerConfig->containers();
-    const auto it = containers.constFind(containerName);
+    const ContainerDefinition *container = m_containerConfig->findByName(containerName);
 
-    if (it == containers.constEnd())
+    if (!container)
     {
         qWarning() << "[ContainerService Action Runner] no configured container named" << containerName;
         return;
     }
 
-    const std::optional<QString> action = it->action();
+    const QString action = container->action();
 
-    if (!action || action->isEmpty())
+    if (action.isEmpty())
     {
+        qWarning() << "[ContainerService Action Runner] Attempt to run action for "<< containerName <<". This suggests a UX/UI problem.";
         return;
     }
 
     // The action is a single command-line string (e.g. "xterm -e bash"),
     // so it needs to be split into a program and its arguments before
     // QProcess can launch it.
-    const QStringList parts = QProcess::splitCommand(*action);
+    const QStringList parts = QProcess::splitCommand(action);
 
     if (parts.isEmpty())
     {
         qWarning() << "[ContainerService Action Runner] could not parse action command for" << containerName
-                   << ":" << *action;
+                   << ":" << action;
         return;
     }
 

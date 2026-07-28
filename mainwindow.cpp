@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     AppConfigReader prefs{this};
     connect(&prefs, &AppConfigReader::configLoaded, [&, this]() {
         if (auto config = prefs.readContainers()) {
-            ui->containerList->initialize(config->containers().values());
+            ui->containerList->initialize(config->containers());
         } else {
             QMessageBox msgBox(this);
             msgBox.setText("Unknown error has occurred.");

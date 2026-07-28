@@ -1,9 +1,10 @@
 #ifndef CONFIGUREDCONTAINERS_H
 #define CONFIGUREDCONTAINERS_H
 
-#include <QHash>
+#include <QList>
 #include <QSet>
 #include <QString>
+#include <QStringList>
 #include <optional>
 #include <yaml-cpp/yaml.h>
 #include "containerdefinition.h"
@@ -27,14 +28,15 @@ public:
      */
     [[nodiscard]] static std::optional<ConfiguredContainers> fromYAML(const YAML::Node &node);
 
-    [[nodiscard]] const QHash<QString, ContainerDefinition> &containers() const;
-    [[nodiscard]] QSet<QString> containerNames() const;
+    [[nodiscard]] const QList<ContainerDefinition> &containers() const;
+    [[nodiscard]] QStringList containerNames() const;
+    [[nodiscard]] const ContainerDefinition *findByName(const QString& name) const;
     [[nodiscard]] bool hasContainers() const;
 
 private:
     ConfiguredContainers() = default;
 
-    QHash<QString, ContainerDefinition> m_containers; // name -> spec
+    QList<ContainerDefinition> m_containers;
 };
 
 #endif // CONFIGUREDCONTAINERS_H

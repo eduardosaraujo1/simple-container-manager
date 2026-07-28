@@ -6,7 +6,7 @@
 
 #include <data/appconfigreader.h>
 #include <data/data-objects/containerstate.h>
-#include <data/data-objects/appprefs/containerdefinition.h>
+#include <data/data-objects/containerdefinition.h>
 #include "containerrowwidget.h"
 
 namespace Ui {
@@ -28,7 +28,6 @@ public slots:
 signals:
     void containerToggle(const QString &containerName, bool isStartCommand);
     void containerAction(const QString &containerName);
-
 private:
     static ContainerRowWidget::Status mapStatus(ContainerState::Status status);
 

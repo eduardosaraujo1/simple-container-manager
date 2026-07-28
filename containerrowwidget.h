@@ -23,6 +23,8 @@ public:
 
     explicit ContainerRowWidget(
         const QString &label,
+        const QString &icon,
+        bool hasAction,
         QWidget *parent = nullptr);
 
     ~ContainerRowWidget();

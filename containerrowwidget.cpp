@@ -3,6 +3,8 @@
 
 ContainerRowWidget::ContainerRowWidget(
     const QString &label,
+    const QString &icon,
+    bool hasAction,
     QWidget *parent)
     : QWidget(parent),
       ui(new Ui::ContainerRowWidget)
@@ -16,6 +18,9 @@ ContainerRowWidget::ContainerRowWidget(
         this, &ContainerRowWidget::onAdminClicked);
 
     setLabel(label);
+    setIcon(icon);
+    setHasAction(hasAction);
+    setStatus(Status::Loading);
 }
 
 ContainerRowWidget::~ContainerRowWidget()
@@ -37,15 +42,7 @@ void ContainerRowWidget::onAdminClicked()
 
 void ContainerRowWidget::setLabel(const QString &label)
 {
-    if (!label.isEmpty())
-    {
-        ui->label->setText(label);
-    }
-    else
-    {
-        qWarning() << "[UI] Required field 'Label' is undefined.";
-        ui->label->setText("Não definido.");
-    }
+    ui->label->setText(label);
 }
 
 void ContainerRowWidget::setIcon(const QString &iconPath)
@@ -54,6 +51,7 @@ void ContainerRowWidget::setIcon(const QString &iconPath)
 
     if (path.isEmpty())
     {
+        qInfo() << "[UI] No icon specified. Loading default...";
         path = ":/images/terminal.svg";
     }
 
@@ -61,6 +59,7 @@ void ContainerRowWidget::setIcon(const QString &iconPath)
 
     if (pixmap.isNull())
     {
+        qInfo() << "[UI] Icon file not found. Loading default...";
         pixmap.load(":/images/terminal.svg");
     }
 

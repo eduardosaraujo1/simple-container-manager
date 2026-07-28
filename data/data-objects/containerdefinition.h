@@ -2,7 +2,6 @@
 #define CONTAINERDEFINITION_H
 
 #include <QString>
-#include <optional>
 
 class ContainerDefinition
 {
@@ -10,21 +9,24 @@ public:
     explicit ContainerDefinition(
         const QString &name,
         const QString &label,
-        const std::optional<QString> &icon = std::nullopt,
-        const std::optional<QString> &action = std::nullopt);
+        const QString &icon = "",
+        const QString &action = "");
 
-    QString name() const;
-    QString label() const;
-    std::optional<QString> icon() const;
-    std::optional<QString> action() const;
+    [[nodiscard]] QString name() const;
+    [[nodiscard]] QString label() const;
+    [[nodiscard]] QString icon() const;
+    [[nodiscard]] QString action() const;
 
     QString toString() const;
+
+    [[nodiscard]] bool hasAction() const;
+    [[nodiscard]] bool hasIcon() const;
 
 private:
     QString m_name;
     QString m_label;
-    std::optional<QString> m_icon;
-    std::optional<QString> m_action;
+    QString m_icon;
+    QString m_action;
 };
 
 #endif // CONTAINERDEFINITION_H

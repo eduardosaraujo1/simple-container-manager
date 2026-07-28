@@ -15,7 +15,6 @@ namespace
 
 std::optional<ConfiguredContainers> ConfiguredContainers::fromYAML(const YAML::Node &node)
 {
-
     if (!(node.IsDefined() && node["containers"]))
     {
         qWarning().noquote() << "[ContainerConfig YAML Parser] could not find `containers` configuration key in parsed config node.\n"
@@ -47,30 +46,39 @@ std::optional<ConfiguredContainers> ConfiguredContainers::fromYAML(const YAML::N
             continue;
         }
 
-        const QString name = QString::fromStdString(item["name"].as<std::string>());
-        const QString label = QString::fromStdString(item["label"].as<std::string>());
+        const QString name = QString::fromStdString(item["name"].as<std::string>(""));
+        const QString label = QString::fromStdString(item["label"].as<std::string>(""));
+        const QString icon = QString::fromStdString(item["icon"].as<std::string>(""));
+        const QString action = QString::fromStdString(item["action"].as<std::string>(""));
 
-        const std::optional<QString> icon = item["icon"]
-                                                ? std::make_optional(QString::fromStdString(item["icon"].as<std::string>()))
-                                                : std::nullopt;
-        const std::optional<QString> action = item["action"]
-                                                  ? std::make_optional(QString::fromStdString(item["action"].as<std::string>()))
-                                                  : std::nullopt;
-
-        config.m_containers.insert(name, ContainerDefinition(name, label, icon, action));
+        config.m_containers.append(ContainerDefinition(name, label, icon, action));
     }
 
     return config;
 }
 
-const QHash<QString, ContainerDefinition> &ConfiguredContainers::containers() const
+const QList<ContainerDefinition> &ConfiguredContainers::containers() const
 {
     return m_containers;
 }
 
-QSet<QString> ConfiguredContainers::containerNames() const
+QStringList ConfiguredContainers::containerNames() const
 {
-    return QSet<QString>(m_containers.keyBegin(), m_containers.keyEnd());
+    QStringList result;
+
+    for (const auto &container : m_containers)
+        result.append(container.name());
+
+    return result;
+}
+
+const ContainerDefinition *ConfiguredContainers::findByName(const QString& name) const {
+     for (const auto &container : m_containers) {
+        if (container.name() == name)
+            return &container;
+    }
+
+    return nullptr;
 }
 
 bool ConfiguredContainers::hasContainers() const
