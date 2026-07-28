@@ -11,7 +11,8 @@ ContainerService::ContainerService(
     DockerEventStream &stream,
     ConfiguredContainers &containers,
     QObject *parent)
-    : QObject(parent), m_cli(&cli), m_eventStream(&stream), m_containerConfig(&containers)
+    : QObject(parent), m_cli(&cli), m_eventStream(&stream), m_containerConfig(&containers),
+    m_streamSupervisor(new DockerEventStreamSupervisor(stream, this))
 {
     connect(m_cli, &DockerCLI::containersUpdated,
             this, &ContainerService::onCliContainersUpdated);
@@ -23,11 +24,7 @@ ContainerService::ContainerService(
     connect(m_eventStream, &DockerEventStream::stopped,
             this, &ContainerService::onEventStreamStop);
 
-    if (!m_eventStream->isRunning())
-    {
-        // TODO: add a dedicated class to retry if the eventStream unexpectedly dies
-        m_eventStream->start();
-    }
+    m_streamSupervisor->keepAlive();
 }
 
 ContainerService::~ContainerService() = default;

@@ -12,6 +12,8 @@
 #include <data/dockercli.h>
 #include <data/dockereventstream.h>
 
+#include <domain/dockereventstreamsupervisor.h>
+
 /**
  * @brief The ContainerService class encapsulates all Docker-related
  * infrastructure and exposes a higher-level API for container
@@ -75,6 +77,8 @@ private:
     DockerCLI *m_cli;
     DockerEventStream *m_eventStream;
     ConfiguredContainers *m_containerConfig;
+
+    DockerEventStreamSupervisor *streamSupervisor;
 };
 
 #endif // CONTAINERSERVICE_H
