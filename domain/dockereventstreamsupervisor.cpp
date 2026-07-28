@@ -37,6 +37,7 @@ void DockerEventStreamSupervisor::keepAlive()
 void DockerEventStreamSupervisor::detatch() {
     if (m_active) {
         m_active = false;
+        m_consecutiveFailures = 0;
     }
 }
 
@@ -52,14 +53,15 @@ void DockerEventStreamSupervisor::onStreamStopped()
     if (m_consecutiveFailures >= kMaxConsecutiveFailures)
     {
         qWarning() << "[DockerEventStreamSupervisor] Could not keep the Docker events stream up after"
-                   << m_consecutiveFailures << "consecutive attempts. Backing off for"
-                   << kLongBackoffMs << "ms.";
+                   << m_consecutiveFailures << "consecutive attempts. Detatching auto restart and emitting signal.";
 
-        scheduleRestart(kLongBackoffMs);
+        emit maxConsecutiveFailuresReached();
+        detatch();
+
         return;
     }
 
-    scheduleRestart(kShortBackoffMs);
+    scheduleRestart(kBackoffMs);
 }
 
 void DockerEventStreamSupervisor::onStreamEventReceived()
@@ -85,8 +87,4 @@ void DockerEventStreamSupervisor::scheduleRestart(int delayMs)
 
 bool DockerEventStreamSupervisor::isActive() {
     return m_active;
-}
-
-bool DockerEventStreamSupervisor::onLongBackoff() {
-    return !(m_stream->isRunning()) && m_consecutiveFailures >= kMaxConsecutiveFailures;
 }

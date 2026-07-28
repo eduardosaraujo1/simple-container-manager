@@ -29,7 +29,6 @@ public:
     ~DockerEventStreamSupervisor() override;
 
     [[nodiscard]] bool isActive();
-    [[nodiscard]] bool onLongBackoff();
 
 public slots:
     /**
@@ -46,6 +45,9 @@ public slots:
      */
     void detatch();
 
+signals:
+    void maxConsecutiveFailuresReached();
+
 private slots:
     void onStreamStopped();
     void onStreamEventReceived();
@@ -54,8 +56,7 @@ private slots:
 private:
     void scheduleRestart(int delayMs);
 
-    static constexpr int kShortBackoffMs = 500;
-    static constexpr int kLongBackoffMs = 2 * 60 * 1000; // 2 minutes
+    static constexpr int kBackoffMs = 500;
     static constexpr int kMaxConsecutiveFailures = 3;
 
     DockerEventStream *m_stream;

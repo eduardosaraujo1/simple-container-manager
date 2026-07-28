@@ -19,17 +19,15 @@ ContainerService::ContainerService(
 
     connect(m_eventStream, &DockerEventStream::eventReceived,
             this, &ContainerService::onDockerEvent);
-    connect(m_eventStream, &DockerEventStream::started,
-            this, &ContainerService::onEventStreamStart);
-    connect(m_eventStream, &DockerEventStream::stopped,
-            this, &ContainerService::onEventStreamStop);
+    connect(m_streamSupervisor, &DockerEventStreamSupervisor::maxConsecutiveFailuresReached,
+            this, &ContainerService::onCriticalStreamFailure);
 
     m_streamSupervisor->keepAlive();
 }
 
 ContainerService::~ContainerService() = default;
 
-bool ContainerService::isEventStreamRunning() const
+bool ContainerService::isAutoRefreshUp() const
 {
     return m_eventStream->isRunning();
 }
@@ -107,12 +105,7 @@ void ContainerService::onDockerEvent(const DockerEvent &event)
     refreshContainers();
 }
 
-void ContainerService::onEventStreamStart()
+void ContainerService::onCriticalStreamFailure()
 {
-    emit streamStatusUpdated(true);
-}
-
-void ContainerService::onEventStreamStop()
-{
-    emit streamStatusUpdated(false);
+    emit autoRefreshDown();
 }

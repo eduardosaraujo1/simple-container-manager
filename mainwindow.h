@@ -11,22 +11,10 @@ namespace Ui
 QT_END_NAMESPACE
 
 /*
-MainWindow either instantiates services in the constructor, it is the source of dependency injection (like the context api from React)
+MainWindow instantiates is the source of dependency injection (like the context api from React).
+It will instantiate every service it needs and store it as a member variable.
 
-Services:
-- <domain/containerservice.h>
-- <data/apppreferences.h>
-
-Data:
-- <data/data-objects/containerinfo.h>
-- <data/data-objects/appprefs/containerconfig.h>
-- <data/data-objects/appprefs/containerspec.h>
-
-ContainerService encapsulates all Docker-related infrastructure
-(DockerCLI + DockerEventStream) and exposes a higher-level API for
-container operations and state synchronization.
-
-MainWindow responsibilities:
+Feature requiremetns:
 
 - Hook ui->btnExit into an application exit call.
 

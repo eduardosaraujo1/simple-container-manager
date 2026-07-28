@@ -38,8 +38,11 @@ public:
     /**
      * @brief Ensures the components responsible auto container status refresh
      * are up.
+     *
+     *  Auto Refresh actively observes the Docker Engine for state changes. If one
+     *  is detected, a request for refresh containers will automatically be placed.
      */
-    [[nodiscard]] bool isEventStreamRunning() const;
+    [[nodiscard]] bool isAutoRefreshUp() const;
 
 public slots:
     /** @brief Requests an up-to-date status of tracked containers from Docker. */
@@ -63,22 +66,25 @@ public slots:
 signals:
     /** @brief Emitted whenever a fresh snapshot of tracked containers is available. */
     void containersUpdated(const QList<ContainerState> &containers);
-    /** @brief Emitted when Docker Stream, responsible for automatically updating containers, fails */
-    void streamStatusUpdated(bool isActive);
+    /** @brief Emitted when Auto Refresh is offline after a failure
+     *
+     *  Auto Refresh actively observes the Docker Engine for state changes. If one
+     *  is detected, a request for refresh containers will automatically be placed.
+     */
+    void autoRefreshDown();
 
 private slots:
     void onCliContainersUpdated(const QList<ContainerState> &containers);
 
     void onDockerEvent(const DockerEvent &event);
-    void onEventStreamStart();
-    void onEventStreamStop();
+    void onCriticalStreamFailure();
 
 private:
     DockerCLI *m_cli;
     DockerEventStream *m_eventStream;
     ConfiguredContainers *m_containerConfig;
 
-    DockerEventStreamSupervisor *streamSupervisor;
+    DockerEventStreamSupervisor *m_streamSupervisor;
 };
 
 #endif // CONTAINERSERVICE_H
