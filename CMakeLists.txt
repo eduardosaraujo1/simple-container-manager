@@ -35,7 +35,7 @@ qt_add_executable(simple-container-manager
     containerrowwidget.h containerrowwidget.cpp containerrowwidget.ui
     containerlistwidget.h containerlistwidget.cpp containerlistwidget.ui
     domain/dockereventstreamsupervisor.h domain/dockereventstreamsupervisor.cpp
-    ui/debouncedbutton.h ui/debouncedbutton.cpp
+    ui/throttledbutton.h ui/throttledbutton.cpp
 
 )
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>387</width>
+    <width>399</width>
     <height>34</height>
    </rect>
   </property>
@@ -130,9 +130,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="admin">
+      <widget class="ThrottledButton" name="admin">
        <property name="text">
         <string>Admin</string>
+       </property>
+       <property name="throttleMilliseconds" stdset="0">
+        <number>1000</number>
        </property>
       </widget>
      </item>
@@ -140,6 +143,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ThrottledButton</class>
+   <extends>QPushButton</extends>
+   <header location="global">ui/throttledbutton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

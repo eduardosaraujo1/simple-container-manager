@@ -70,7 +70,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnRefresh">
+          <widget class="ThrottledButton" name="btnRefresh">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -89,9 +89,6 @@
              <height>16777215</height>
             </size>
            </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Refreshes container status&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
            <property name="text">
             <string/>
            </property>
@@ -104,6 +101,9 @@
            </property>
            <property name="flat">
             <bool>false</bool>
+           </property>
+           <property name="throttleMilliseconds" stdset="0">
+            <number>2000</number>
            </property>
           </widget>
          </item>
@@ -213,6 +213,11 @@
    <extends>QWidget</extends>
    <header>containerlistwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ThrottledButton</class>
+   <extends>QPushButton</extends>
+   <header location="global">ui/throttledbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources>
