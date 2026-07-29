@@ -23,13 +23,17 @@
  *
  * Results are communicated through Qt signals:
  * - configLoaded() when the configuration has been successfully loaded.
- * - criticalError() when the configuration could not be read or parsed.
+ * - errorOccurred(AppConfigReader::Error) when the configuration could not be read or parsed.
  */
 class AppConfigReader : public QObject
 {
     Q_OBJECT
 
 public:
+    enum class Error {
+        ReadError,
+        TemplateWriteError
+    };
     /**
      * @brief Creates a new configuration reader.
      *
@@ -100,6 +104,6 @@ signals:
     /**
      * @brief Emitted when the configuration could not be loaded or parsed.
      */
-    void criticalError();
+    void errorOccurred(Error errorType);
 };
 #endif // APPCONFIGREADER_H

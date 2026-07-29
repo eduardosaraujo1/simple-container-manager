@@ -22,7 +22,7 @@ std::optional<ConfiguredContainers> AppConfigReader::readContainers()
 {
     if (!m_isLoaded)
     {
-        qWarning() << "[AppPreferences] Attempted to list containers before loading config file into memory.";
+        qWarning() << "[AppConfigReader] Attempted to list containers before loading config file into memory.";
         return std::nullopt;
     }
 
@@ -45,7 +45,7 @@ namespace
         {
             if (!dir.mkpath("."))
             {
-                qWarning() << "[AppPreferences Directory Setup] \"make directory\" operation failed\n"
+                qWarning() << "[AppConfigReader Directory Setup] \"make directory\" operation failed\n"
                            << "Config path: " << configFilePath << "\n";
                 return false;
             }
@@ -54,45 +54,47 @@ namespace
         return true;
     }
 
-    void writeConfigFile(const QString &content, const QString &filePath)
+    bool writeConfigFile(const QString &content, const QString &filePath)
     {
         if (!setupConfigDirectory(filePath))
         {
-            qWarning() << "[AppPreferences Config File Writer] Failed to create directory containing the config."
+            qWarning() << "[AppConfigReader Config File Writer] Failed to create directory containing the config."
                        << "Config path: " << filePath << "\n"
                        << "Content: " << content;
-            return;
+            return false;
         }
 
         QFile file(filePath);
 
         if (!file.open(QFile::ReadWrite | QFile::Truncate))
         {
-            qWarning() << "[AppPreferences Config File Writer] failed to open file resource for writing; interrupting config file write process\n"
+            qWarning() << "[AppConfigReader Config File Writer] failed to open file resource for writing; interrupting config file write process\n"
                        << "Config path: " << filePath << "\n"
                        << "Content: " << content;
-            return;
+            return false;
         }
 
         if (file.write(content.toUtf8()) == -1)
         {
-            qWarning() << "[AppPreferences Config File Writer] failed to write config content to config file.\n"
+            qWarning() << "[AppConfigReader Config File Writer] failed to write config content to config file.\n"
                        << "Config path: " << filePath;
+            return false;
         }
 
         file.close();
+        return true;
     }
 
     std::optional<YAML::Node> readYAMLFile(QFile &file)
     {
         if (!file.exists())
         {
-            qWarning() << "[AppPreferences YAML File Reader] file does not exist; interrupting YAML parsing";
+            qWarning() << "[AppConfigReader YAML File Reader] file does not exist; interrupting YAML parsing";
             return std::nullopt;
         }
         if (!file.open(QFile::ReadOnly))
         {
-            qWarning() << "[AppPreferences YAML File Reader]: failed to open file; interrupting YAML parsing";
+            qWarning() << "[AppConfigReader YAML File Reader]: failed to open file; interrupting YAML parsing";
             return std::nullopt;
         }
 
@@ -106,11 +108,11 @@ namespace
         }
         catch (const YAML::ParserException &e)
         {
-            qWarning() << "[AppPreferences YAML File Reader] YAML parser could not read the file.\nError description:" << e.what();
+            qWarning() << "[AppConfigReader YAML File Reader] YAML parser could not read the file.\nError description:" << e.what();
         }
         catch (const std::exception &e)
         {
-            qWarning() << "[AppPreferences YAML File Reader] An unexpected error has occurred.\nError description:" << e.what();
+            qWarning() << "[AppConfigReader YAML File Reader] An unexpected error has occurred.\nError description:" << e.what();
         }
 
         return std::nullopt;
@@ -143,14 +145,14 @@ void AppConfigReader::readConfigFile()
         }
         else
         {
-            qCritical() << "[AppPreferences] Failed to read config yaml file. Emitting crash signal";
-            emit criticalError();
+            qCritical() << "[AppConfigReader] Failed to read config yaml file. Emitting crash signal";
+            emit errorOccurred(Error::ReadError);
             return;
         }
     }
     else
     {
-        qWarning() << "[AppPreferences] Preferences.yaml was not found. Attempting to write default file";
+        qWarning() << "[AppConfigReader] preferences.yaml was not found. Attempting to write default file";
         writeConfigFile(AppConfigReader::defaultConfig, m_configPath);
         rootNode = YAML::Load(AppConfigReader::defaultConfig.toStdString());
     }
