@@ -7,47 +7,99 @@
 #include "data-objects/configuredcontainers.h"
 #include <optional>
 
+/**
+ * @brief Reads and caches the application's YAML configuration file.
+ *
+ * AppConfigReader is responsible for locating, reading, and parsing the
+ * application's `preferences.yaml` file. The parsed YAML document is cached
+ * in memory and can later be converted into a ConfiguredContainers object.
+ *
+ * If the configuration file does not exist, a default template is written to
+ * the expected location before loading it into memory.
+ *
+ * Configuration is loaded only once during the lifetime of the object.
+ * Subsequent calls to readConfigFile() are ignored unless a new
+ * AppConfigReader instance is created.
+ *
+ * Results are communicated through Qt signals:
+ * - configLoaded() when the configuration has been successfully loaded.
+ * - criticalError() when the configuration could not be read or parsed.
+ */
 class AppConfigReader : public QObject
 {
     Q_OBJECT
+
 public:
+    /**
+     * @brief Creates a new configuration reader.
+     *
+     * Determines the platform-specific location of the application's
+     * configuration file but does not read it automatically.
+     *
+     * @param parent Parent QObject.
+     */
     explicit AppConfigReader(QObject *parent = nullptr);
+
     ~AppConfigReader() = default;
 
     /**
-     * @brief Returns the parsed container configuration.
+     * @brief Returns the configured containers from the cached YAML document.
      *
-     * Triggers readConfigFile() first if the config hasn't been loaded yet. Always returns a valid
-     * ConfiguredContainers, even if nothing was found or a critical error was emitted (in which case it
-     * will simply be empty).
+     * The configuration must have previously been loaded by calling
+     * readConfigFile(). If no configuration has been loaded yet,
+     * std::nullopt is returned.
+     *
+     * If the cached YAML exists but contains no configured containers,
+     * a valid (possibly empty) ConfiguredContainers object is returned.
+     *
+     * @return The parsed container configuration, or std::nullopt if no
+     * configuration has been loaded.
      */
     [[nodiscard]] std::optional<ConfiguredContainers> readContainers();
+
+    /**
+     * @brief Returns whether the configuration has already been loaded.
+     *
+     * Once this function returns true, subsequent calls to readConfigFile()
+     * become no-ops and readContainers() can safely be used.
+     *
+     * @return true if the configuration is cached in memory; false otherwise.
+     */
     [[nodiscard]] bool isCached();
 
 public slots:
     /**
-     * @brief reads the config file and stores the raw YAML node in application memory
+     * @brief Loads the application's configuration file into memory.
      *
-     * This function attempts to read the application config file and store its contents. If the file is not
-     * found, the required folders and a template placeholder is placed.
+     * Attempts to read and parse the application's `preferences.yaml` file.
+     * If the file does not exist, the required directory structure is created
+     * and a default configuration template is written before loading it.
      *
-     * This is a no-op if the config file has already been read (see isLoaded()).
+     * This function performs no work if the configuration has already been
+     * loaded.
      *
-     * Once complete, one of the following signals is emitted:
-     * - preferencesUpdated()
-     * - criticalError()
+     * On completion exactly one of the following signals is emitted:
+     * - configLoaded() if the configuration was successfully loaded.
+     * - criticalError() if the configuration could not be read or parsed.
      */
     void readConfigFile();
 
 private:
     static QString defaultConfig;
-    // attributes
+
     bool m_isLoaded = false;
     YAML::Node m_configNode;
     QString m_configPath;
+
 signals:
+    /**
+     * @brief Emitted after the configuration has been successfully loaded.
+     */
     void configLoaded();
+
+    /**
+     * @brief Emitted when the configuration could not be loaded or parsed.
+     */
     void criticalError();
 };
-
 #endif // APPCONFIGREADER_H
