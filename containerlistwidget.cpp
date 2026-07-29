@@ -12,7 +12,7 @@ void ContainerListWidget::initialize(
 {
     if (m_initialized)
     {
-        qWarning() << "[ContainerListWidget] Attempted to initialize more than once. This is unsupported.";
+        qWarning() << "[UI ContainerListWidget] Attempted to initialize more than once. This is unsupported.";
         return;
     }
 
@@ -54,6 +54,11 @@ void ContainerListWidget::initialize(
     ui->loading->hide();
     ui->contentsLayout->addStretch();
     m_initialized = true;
+}
+
+bool ContainerListWidget::isInitialized()
+{
+    return m_initialized;
 }
 
 ContainerListWidget::~ContainerListWidget()

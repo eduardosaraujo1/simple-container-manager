@@ -57,7 +57,7 @@ std::optional<ConfiguredContainers> ConfiguredContainers::fromYAML(const YAML::N
     return config;
 }
 
-const QList<ContainerDefinition> &ConfiguredContainers::containers() const
+const QList<ContainerDefinition> &ConfiguredContainers::asList() const
 {
     return m_containers;
 }

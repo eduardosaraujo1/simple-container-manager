@@ -57,11 +57,16 @@ void MainWindow::setupConnections()
     }
 
     connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onExitClicked);
+    qDebug() << "[UI] Successfully connected buttons to domain actions.";
 }
 
 void MainWindow::initializeContainers(const ConfiguredContainers &containers)
 {
+    if (m_listWidget->isInitialized()) {
+        return;
+    }
 
+    m_listWidget->initialize(containers.asList());
 }
 
 void MainWindow::onExitClicked()

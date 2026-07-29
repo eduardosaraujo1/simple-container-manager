@@ -22,6 +22,7 @@ public:
     ~ContainerListWidget();
 
     void initialize(const QList<ContainerDefinition> &containers);
+    [[nodiscard]] bool isInitialized();
 public slots:
     void refreshContainerInfo(const QList<ContainerState> &containers);
     void setContainerStatus(const QString &containerName, ContainerRowWidget::Status status);

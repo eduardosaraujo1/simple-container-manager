@@ -28,7 +28,7 @@ public:
      */
     [[nodiscard]] static std::optional<ConfiguredContainers> fromYAML(const YAML::Node &node);
 
-    [[nodiscard]] const QList<ContainerDefinition> &containers() const;
+    [[nodiscard]] const QList<ContainerDefinition> &asList() const;
     [[nodiscard]] QStringList containerNames() const;
     [[nodiscard]] const ContainerDefinition *findByName(const QString& name) const;
     [[nodiscard]] bool hasContainers() const;
