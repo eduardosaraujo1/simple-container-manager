@@ -22,13 +22,15 @@ public:
 public slots:
     void startContainer(const QString &containerId);
     void stopContainer(const QString &containerId);
-private:
-    QProcess m_proc{this};
 private slots:
     void onProcessDone(int exitCode, QProcess::ExitStatus status);
 signals:
     void containersUpdated(const QList<ContainerState> &containers);
     void parseErrorOccurred();
+private:
+    QProcess m_proc{this};
+
+    void runToggleCommand(const QString &containerId, bool isStartCommand);
 };
 
 #endif // DOCKERCLI_H

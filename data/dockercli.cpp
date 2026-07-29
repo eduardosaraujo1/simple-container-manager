@@ -12,14 +12,14 @@ namespace {
         const QJsonDocument doc = QJsonDocument::fromJson(rawData, &jsonParseError);
 
         if (jsonParseError.error != QJsonParseError::NoError) {
-            qWarning() << "parseJsonObject: Error when parsing JSON output. Raw Data: \n"
+            qWarning() << "[DockerCLI Json Parser] Error when parsing JSON output. Raw Data: \n"
                        << rawData << "\nError:"
                        << jsonParseError.errorString();
             return std::nullopt;
         }
 
         if (! doc.isObject()) {
-            qWarning() << "parseJsonObject: JSON parsed succcessfully, but not as valid object. Raw Data: \n"
+            qWarning() << "[DockerCLI Json Parser] JSON parsed succcessfully, but not as valid object. Raw Data: \n"
                        << rawData;
             return std::nullopt;
         }
@@ -34,7 +34,7 @@ namespace {
             || name.isUndefined()
             || status.isUndefined()
             ) {
-            qWarning() << "parseContainerInfoString: JSON parsed succcessfully but does not have the required keys. Raw Data:\n"
+            qWarning() << "[DockerCLI Json Parser] JSON parsed succcessfully but does not have the required keys. Raw Data:\n"
                        << rawData;
             return std::nullopt;
         }
@@ -43,7 +43,7 @@ namespace {
             = ContainerState::statusFromString(status.toString());
 
         if (statusEnum == ContainerState::Status::Unknown) {
-            qWarning() << "parseContainerInfoString: Status \""
+            qWarning() << "[DockerCLI Json Parser] Status \""
                        << status.toString() << "\" could not be identified. Defaulting to Status::Unknown";
         }
 
@@ -79,7 +79,7 @@ void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
     };
 
     if (m_proc.state() != QProcess::NotRunning) {
-        qWarning() << "requestContainerRefresh: previous query is still running. Dropping request.";
+        qWarning() << "[DockerCLI] previous query is still running. Dropping request.";
         return;
     }
 
@@ -93,7 +93,7 @@ void DockerCLI::requestContainerRefresh(const QStringList &namesFilter) {
 
 void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     if (exitCode != 0 || status == QProcess::ExitStatus::CrashExit) {
-        qCritical() << "onProcessDone: unexpected error occurred when querying containers. Exit code:" << exitCode
+        qCritical() << "[DockerCLI] unexpected error occurred when querying containers. Exit code:" << exitCode
                    << ".\nError output:\n" << m_proc.readAllStandardError();
         return;
     }
@@ -117,62 +117,47 @@ void DockerCLI::onProcessDone(int exitCode, QProcess::ExitStatus status) {
     }
 
     if (hasErrors) {
-        // I have considered emitting the offending string along side this signal
-        // However, the logging layer (qWarning()) should already take care of observability
-        // and the consumer does not care about how many errors happened
-        emit this->parseErrorOccurred();
+        emit parseErrorOccurred();
     }
 
     emit this->containersUpdated(finalResult);
 }
 
-void DockerCLI::startContainer(const QString &containerId) {
+void DockerCLI::runToggleCommand(const QString &containerId, bool isStartCommand)
+{
     QProcess *process = new QProcess(this);
 
-    QObject::connect(process, &QProcess::finished, this, [process](int exitCode, QProcess::ExitStatus exitStatus) {
+    QObject::connect(process, &QProcess::finished, this,
+                     [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitCode != 0 || exitStatus == QProcess::ExitStatus::CrashExit) {
-            qCritical() << "startContainer: an unexpected error occurred.\nExit code:"
+            qCritical() << "[DockerCLI] an unexpected error occurred " <<
+                (isStartCommand ? "starting" : "stopping") << "docker process.\nExit code:"
                         << exitCode << ".\n"
                         << "Error output:\n" << process->readAllStandardError() << ".\n"
                         << "Standard output:\n" << process->readAllStandardOutput() << ".\n";
-            return;
         }
         process->deleteLater();
     });
 
-    QObject::connect(process, &QProcess::errorOccurred, this, [process](QProcess::ProcessError)
+    QObject::connect(process, &QProcess::errorOccurred, this, [&](QProcess::ProcessError)
     {
-        qCritical() << "startContainer: unexpected error starting docker process: " << process->errorString();
+        qCritical() << "[DockerCLI] Unexpected error " << (isStartCommand ? "starting" : "stopping")
+                    << " Docker process: " << process->errorString();
         process->deleteLater();
     });
 
     process->start("docker", {
-        "start",
+        isStartCommand ? "start" : "stop",
         containerId
     });
+
+    process->waitForFinished();
+}
+
+void DockerCLI::startContainer(const QString &containerId) {
+    return runToggleCommand(containerId, true);
 }
 
 void DockerCLI::stopContainer(const QString &containerId) {
-    QProcess *process = new QProcess(this);
-
-    QObject::connect(process, &QProcess::finished, this, [process](int exitCode, QProcess::ExitStatus exitStatus) {
-        if (exitCode != 0 || exitStatus == QProcess::ExitStatus::CrashExit) {
-            qCritical() << "stopContainer: an unexpected error occurred.\nExit code:"
-                        << exitCode << ".\n"
-                        << "Error output:\n" << process->readAllStandardError() << ".\n"
-                        << "Standard output:\n" << process->readAllStandardOutput() << ".\n";
-        }
-        process->deleteLater();
-    });
-
-    QObject::connect(process, &QProcess::errorOccurred, this, [process](QProcess::ProcessError)
-    {
-        qCritical() << "stopContainer: unexpected error starting docker process: " << process->errorString();
-        process->deleteLater();
-    });
-
-    process->start("docker", {
-        "stop",
-        containerId
-    });
+    return runToggleCommand(containerId, false);
 }
