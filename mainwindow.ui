@@ -89,6 +89,9 @@
              <height>16777215</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>Updates the current container information</string>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -103,7 +106,7 @@
             <bool>false</bool>
            </property>
            <property name="throttleMilliseconds" stdset="0">
-            <number>2000</number>
+            <number>10000</number>
            </property>
           </widget>
          </item>
@@ -113,7 +116,7 @@
       <item>
        <widget class="QScrollArea" name="scrollArea">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -130,7 +133,7 @@
            <x>0</x>
            <y>0</y>
            <width>687</width>
-           <height>371</height>
+           <height>332</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="scrollAreaLayout">
@@ -151,6 +154,32 @@
           </property>
          </layout>
         </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblAutoRefreshWarning">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: #f8e287;
+color: #534600;</string>
+        </property>
+        <property name="text">
+         <string>**Warning**: Auto refresh has crashed. Container state may become stale.</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::TextFormat::MarkdownText</enum>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+        <property name="margin">
+         <number>6</number>
+        </property>
        </widget>
       </item>
      </layout>
