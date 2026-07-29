@@ -146,14 +146,18 @@ void AppConfigReader::readConfigFile()
         else
         {
             qCritical() << "[AppConfigReader] Failed to read config yaml file. Emitting crash signal";
-            emit errorOccurred(Error::ReadError);
+            emit errorOccurred(Error::FileReadError);
             return;
         }
     }
     else
     {
         qWarning() << "[AppConfigReader] preferences.yaml was not found. Attempting to write default file";
-        writeConfigFile(AppConfigReader::defaultConfig, m_configPath);
+        if (writeConfigFile(AppConfigReader::defaultConfig, m_configPath)) {
+            emit errorOccurred(Error::TemplateWriteError);
+        }
+
+        // Avoid reading the file that was just created to prevent a potential error
         rootNode = YAML::Load(AppConfigReader::defaultConfig.toStdString());
     }
 

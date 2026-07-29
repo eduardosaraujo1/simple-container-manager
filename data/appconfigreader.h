@@ -31,7 +31,7 @@ class AppConfigReader : public QObject
 
 public:
     enum class Error {
-        ReadError,
+        FileReadError,
         TemplateWriteError
     };
     /**
@@ -88,13 +88,6 @@ public slots:
      */
     void readConfigFile();
 
-private:
-    static QString defaultConfig;
-
-    bool m_isLoaded = false;
-    YAML::Node m_configNode;
-    QString m_configPath;
-
 signals:
     /**
      * @brief Emitted after the configuration has been successfully loaded.
@@ -104,6 +97,13 @@ signals:
     /**
      * @brief Emitted when the configuration could not be loaded or parsed.
      */
-    void errorOccurred(Error errorType);
+    void errorOccurred(AppConfigReader::Error errorType);
+
+private:
+    static QString defaultConfig;
+
+    bool m_isLoaded = false;
+    YAML::Node m_configNode;
+    QString m_configPath;
 };
 #endif // APPCONFIGREADER_H
