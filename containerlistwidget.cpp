@@ -78,6 +78,19 @@ void ContainerListWidget::refreshContainerInfo(
     }
 }
 
+void ContainerListWidget::setContainerStatus(const QString &containerName, ContainerRowWidget::Status status)
+{
+    auto it = m_rows.find(containerName);
+
+    if (it == m_rows.end()) {
+        qWarning() << "[UI] The corresponding widget for '" << containerName << "'' was not found. Status will not be displayed.";
+        return;
+    }
+
+    it.value() // ContainerRowWidget
+        ->setStatus(status);
+}
+
 ContainerRowWidget::Status
 ContainerListWidget::mapStatus(ContainerState::Status status)
 {
@@ -85,19 +98,19 @@ ContainerListWidget::mapStatus(ContainerState::Status status)
     {
 
     case ContainerState::Status::Running:
-        return ContainerRowWidget::Status::Running;
+        return ContainerRowWidget::Status::Started;
 
     case ContainerState::Status::Created:
     case ContainerState::Status::Exited:
         return ContainerRowWidget::Status::Stopped;
     case ContainerState::Status::Restarting:
+    case ContainerState::Status::Removing:
         return ContainerRowWidget::Status::Loading;
 
     case ContainerState::Status::Paused:
-    case ContainerState::Status::Removing:
     case ContainerState::Status::Dead:
     case ContainerState::Status::Unknown:
     default:
-        return ContainerRowWidget::Status::Error;
+        return ContainerRowWidget::Status::NotFound;
     }
 }

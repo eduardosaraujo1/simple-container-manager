@@ -24,6 +24,7 @@ public:
     void initialize(const QList<ContainerDefinition> &containers);
 public slots:
     void refreshContainerInfo(const QList<ContainerState> &containers);
+    void setContainerStatus(const QString &containerName, ContainerRowWidget::Status status);
 
 signals:
     void containerToggle(const QString &containerName, bool isStartCommand);

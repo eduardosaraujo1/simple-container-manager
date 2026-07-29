@@ -133,7 +133,7 @@
            <height>371</height>
           </rect>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout">
+         <layout class="QVBoxLayout" name="scrollAreaLayout">
           <property name="spacing">
            <number>0</number>
           </property>

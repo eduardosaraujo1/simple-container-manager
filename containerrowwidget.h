@@ -15,10 +15,12 @@ class ContainerRowWidget : public QWidget
 public:
     enum class Status
     {
-        Running,
+        Started,
         Stopped,
         Loading,
-        Error
+        Starting,
+        Stopping,
+        NotFound
     };
 
     explicit ContainerRowWidget(
