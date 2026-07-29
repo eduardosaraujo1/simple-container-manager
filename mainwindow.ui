@@ -149,16 +149,6 @@
           <property name="bottomMargin">
            <number>0</number>
           </property>
-          <item>
-           <widget class="ContainerListWidget" name="containerList" native="true">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </widget>
@@ -208,12 +198,6 @@
   </widget>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>ContainerListWidget</class>
-   <extends>QWidget</extends>
-   <header>containerlistwidget.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>ThrottledButton</class>
    <extends>QPushButton</extends>
