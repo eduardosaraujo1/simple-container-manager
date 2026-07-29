@@ -44,6 +44,8 @@ public:
      */
     [[nodiscard]] bool isAutoRefreshUp() const;
 
+    [[nodiscard]] const ConfiguredContainers& containers() const;
+
 public slots:
     /** @brief Requests an up-to-date status of tracked containers from Docker. */
     void refreshContainers();
@@ -80,11 +82,11 @@ private slots:
     void onCriticalStreamFailure();
 
 private:
-    DockerCLI *m_cli;
-    DockerEventStream *m_eventStream;
-    ConfiguredContainers *m_containerConfig;
+    DockerCLI &m_cli;
+    DockerEventStream &m_eventStream;
+    ConfiguredContainers &m_containerConfig;
 
-    DockerEventStreamSupervisor *m_streamSupervisor;
+    DockerEventStreamSupervisor m_streamSupervisor;
 };
 
 #endif // CONTAINERSERVICE_H

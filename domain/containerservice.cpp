@@ -11,49 +11,54 @@ ContainerService::ContainerService(
     DockerEventStream &stream,
     ConfiguredContainers &containers,
     QObject *parent)
-    : QObject(parent), m_cli(&cli), m_eventStream(&stream), m_containerConfig(&containers),
-    m_streamSupervisor(new DockerEventStreamSupervisor(stream, this))
+    : QObject(parent), m_cli(cli), m_eventStream(stream), m_containerConfig(containers),
+    m_streamSupervisor(stream, this)
 {
-    connect(m_cli, &DockerCLI::containersUpdated,
+    connect(&m_cli, &DockerCLI::containersUpdated,
             this, &ContainerService::onCliContainersUpdated);
 
-    connect(m_eventStream, &DockerEventStream::eventReceived,
+    connect(&m_eventStream, &DockerEventStream::eventReceived,
             this, &ContainerService::onDockerEvent);
-    connect(m_streamSupervisor, &DockerEventStreamSupervisor::maxConsecutiveFailuresReached,
+    connect(&m_streamSupervisor, &DockerEventStreamSupervisor::maxConsecutiveFailuresReached,
             this, &ContainerService::onCriticalStreamFailure);
 
-    m_streamSupervisor->keepAlive();
+    m_streamSupervisor.keepAlive();
 }
 
 ContainerService::~ContainerService() = default;
 
 bool ContainerService::isAutoRefreshUp() const
 {
-    return m_eventStream->isRunning();
+    return m_eventStream.isRunning();
+}
+
+const ConfiguredContainers &ContainerService::containers() const
+{
+    return m_containerConfig;
 }
 
 void ContainerService::refreshContainers()
 {
     // Only ask Docker about containers the user actually configured;
     // anything else running on the host is none of our business.
-    const QStringList namesFilter = m_containerConfig->containerNames();
+    const QStringList namesFilter = m_containerConfig.containerNames();
 
-    m_cli->requestContainerRefresh(namesFilter);
+    m_cli.requestContainerRefresh(namesFilter);
 }
 
 void ContainerService::startContainer(const QString &containerName)
 {
-    m_cli->startContainer(containerName);
+    m_cli.startContainer(containerName);
 }
 
 void ContainerService::stopContainer(const QString &containerName)
 {
-    m_cli->stopContainer(containerName);
+    m_cli.stopContainer(containerName);
 }
 
 void ContainerService::runAction(const QString &containerName)
 {
-    const ContainerDefinition *container = m_containerConfig->findByName(containerName);
+    const ContainerDefinition *container = m_containerConfig.findByName(containerName);
 
     if (!container)
     {
