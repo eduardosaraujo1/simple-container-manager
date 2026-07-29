@@ -30,5 +30,9 @@ void ThrottledButton::handleClicked()
 
 void ThrottledButton::reenable()
 {
+    if (m_timer.isActive()) {
+        m_timer.stop();
+    }
+
     setEnabled(true);
 }

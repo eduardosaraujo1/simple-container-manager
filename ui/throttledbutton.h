@@ -16,10 +16,14 @@ public:
 
     int throttleMilliseconds() const;
     void setThrottleMilliseconds(int milliseconds);
+public slots:
+    /**
+     * @brief Programatically reenables the button before the timer is up
+     */
+    void reenable();
 
 private slots:
     void handleClicked();
-    void reenable();
 
 private:
     QTimer m_timer;
