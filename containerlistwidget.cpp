@@ -109,6 +109,14 @@ void ContainerListWidget::setContainerStatus(const QString &containerName, Conta
 
     it.value() // ContainerRowWidget
         ->setStatus(status);
+
+    // Timeout to NotFound if Loading, Starting of Stopping remains for too long.
+    if (status == ContainerRowWidget::Status::Loading
+        || status == ContainerRowWidget::Status::Starting
+        || status == ContainerRowWidget::Status::Stopping
+        ) {
+        scheduleContainerTimeout(containerName);
+    }
 }
 
 ContainerRowWidget::Status
@@ -133,4 +141,21 @@ ContainerListWidget::mapStatus(ContainerState::Status status)
     default:
         return ContainerRowWidget::Status::NotFound;
     }
+}
+
+void ContainerListWidget::scheduleContainerTimeout(const QString &containerName, int timeout)
+{
+    QTimer::singleShot(timeout, this, [this, containerName]() {
+        auto it = m_rows.find(containerName);
+        if (it == m_rows.end()) return;
+        ContainerRowWidget *row = it.value();
+
+            if (row && (row->status() == ContainerRowWidget::Status::Loading
+                    || row->status() == ContainerRowWidget::Status::Starting
+                    || row->status() == ContainerRowWidget::Status::Stopping)) {
+                qInfo() << "[ContainerListWidget UI] Docker did not respond with permanent"
+                           << "state in time for" << containerName;
+                row->setStatus(ContainerRowWidget::Status::NotFound);
+            }
+    });
 }

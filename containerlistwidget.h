@@ -27,6 +27,7 @@ public:
 public slots:
     void refreshContainerInfo(const QList<ContainerState> &containers);
     void setContainerStatus(const QString &containerName, ContainerRowWidget::Status status);
+    void scheduleContainerTimeout(const QString &containerName, int timeout=10000);
 
 signals:
     void containerToggle(const QString &containerName, bool isStartCommand);
