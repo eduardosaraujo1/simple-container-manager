@@ -71,7 +71,7 @@ void MainWindow::setupContainerConnections(ContainerListWidget &listWidget,
 
 bool MainWindow::setupContainerList(ContainerService &containerService)
 {
-    if (m_listWidget || m_listWidget->isInitialized() || m_initialized) {
+    if (m_listWidget) {
         qWarning() << "[UI] Attempted to initialize container configuration more than once. Ignoring request...";
         return false;
     }
@@ -88,13 +88,19 @@ bool MainWindow::setupContainerList(ContainerService &containerService)
     // Other constructor operations
     ui->lblWarning->hide();
 
+    qInfo() << "[UI] Successfully finished loading container widgets.";
+
     return true;
 }
 
 bool MainWindow::setupWelcomeScreen()
 {
-    if (m_listWidget || m_initialized) {
-        qWarning() << "[UI] Attempted to setup welcome screen when list widget already exists.";
+    if (m_listWidget) {
+        qWarning() << "[UI] Attempted to setup welcome screen after previous ContainerListWidget setup. Ignoring request...";
+        return false;
+    }
+    if (m_initialized) {
+        qWarning() << "[UI] Attempted to setup welcome screen widget more than once. Ignoring request...";
         return false;
     }
     ui->scrollAreaLayout->addWidget(new SetupInstructionsWidget(this));
@@ -168,7 +174,7 @@ void MainWindow::onContainersUpdated(const QList<ContainerState> &containers)
     }
 
     // Apply update to list
-    qInfo() << "[UI] Identified container list update. Applying refresh."
+    qInfo() << "[UI] Identified container list update. Applying refresh.";
     m_listWidget->refreshContainerInfo(containers);
 
     // When a refresh is finished, ensure the user can click the refresh button again
@@ -179,11 +185,13 @@ void MainWindow::onContainersUpdated(const QList<ContainerState> &containers)
 
 void MainWindow::onAutoRefreshDown()
 {
+    qInfo() << "[UI] Detected auto refresh crash. Displaying error...";
     setWarning("Auto refresh has crashed. Container state may become stale.");
 }
 
 void MainWindow::onAutoRefreshUp()
 {
+    qInfo() << "[UI] Detected auto refresh restoration. Removing error...";
     setWarning("");
 }
 

@@ -8,11 +8,12 @@ ContainerListWidget::ContainerListWidget(QWidget *parent)
 }
 
 bool ContainerListWidget::initialize(
-    const QList<ContainerDefinition> &containers)
+    const QList<ContainerDefinition> &containers,
+    int loadingTimeout)
 {
     if (m_initialized)
     {
-        qWarning() << "[UI ContainerListWidget] Attempted to initialize more than once. This is unsupported.";
+        qWarning() << "[ContainerListWidget UI] Attempted to initialize more than once. This is unsupported.";
         return false;
     }
 
@@ -22,6 +23,7 @@ bool ContainerListWidget::initialize(
             spec.label(),
             spec.icon(),
             spec.hasAction(),
+            ContainerRowWidget::Status::Loading,
             this);
 
         // Associate the container row pointer to its parent container
@@ -34,7 +36,7 @@ bool ContainerListWidget::initialize(
                 this,
                 [this, containerName](bool start)
                 {
-                    qInfo() << "[UI] Requesting to `" << (start ? "start" : "stop") << "` container " << containerName;
+                    qInfo() << "[ContainerListWidget UI] Requesting to `" << (start ? "start" : "stop") << "` container " << containerName;
                     emit containerToggle(containerName, start);
                 });
 
@@ -43,7 +45,7 @@ bool ContainerListWidget::initialize(
                 this,
                 [this, containerName]()
                 {
-                    qInfo() << "[UI] Requesting to run admin command from " << containerName;
+                    qInfo() << "[ContainerListWidget UI] Requesting to run admin command from " << containerName;
                     emit containerAction(containerName);
                 });
 
@@ -51,6 +53,17 @@ bool ContainerListWidget::initialize(
         ui->contentsLayout->addWidget(row);
     }
 
+    // After X seconds of initialization, any container that was Loading becomes NotFound.
+    QTimer::singleShot(loadingTimeout, this, [this]() {
+        qInfo() << "[ContainerListWidget UI] Applying not found status to containers past the timeout.";
+        for (ContainerRowWidget *row : std::as_const(m_rows)) {
+            if (row && row->status() == ContainerRowWidget::Status::Loading) {
+                row->setStatus(ContainerRowWidget::Status::NotFound);
+            }
+        }
+    });
+
+    // Finish up initialization
     ui->loading->hide();
     ui->contentsLayout->addStretch();
     m_initialized = true;
@@ -76,7 +89,7 @@ void ContainerListWidget::refreshContainerInfo(
         auto it = m_rows.find(container.name());
 
         if (it == m_rows.end()) {
-            qWarning() << "[UI] The corresponding widget for '" << container.name() << "'' was not found. Status will not be displayed.";
+            qWarning() << "[ContainerListWidget UI] The corresponding widget for '" << container.name() << "'' was not found. Status will not be displayed.";
             continue;
         }
 
@@ -90,7 +103,7 @@ void ContainerListWidget::setContainerStatus(const QString &containerName, Conta
     auto it = m_rows.find(containerName);
 
     if (it == m_rows.end()) {
-        qWarning() << "[UI] The corresponding widget for '" << containerName << "'' was not found. Status will not be displayed.";
+        qWarning() << "[ContainerListWidget UI] The corresponding widget for '" << containerName << "'' was not found. Status will not be displayed.";
         return;
     }
 

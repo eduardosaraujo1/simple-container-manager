@@ -27,9 +27,12 @@ public:
         const QString &label,
         const QString &icon,
         bool hasAction,
+        Status status,
         QWidget *parent = nullptr);
 
     ~ContainerRowWidget();
+
+    Status status() const;
 
     void setIcon(const QString &iconPath);
     void setLabel(const QString &label);

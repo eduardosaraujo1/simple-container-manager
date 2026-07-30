@@ -2,6 +2,7 @@
 #define CONTAINERLISTWIDGET_H
 
 #include <QHash>
+#include <QTimer>
 #include <QWidget>
 
 #include <data/appconfigreader.h>
@@ -21,7 +22,7 @@ public:
     explicit ContainerListWidget(QWidget *parent = nullptr);
     ~ContainerListWidget();
 
-    bool initialize(const QList<ContainerDefinition> &containers);
+    bool initialize(const QList<ContainerDefinition> &containers, int loadingTimeout=10000);
     [[nodiscard]] bool isInitialized();
 public slots:
     void refreshContainerInfo(const QList<ContainerState> &containers);

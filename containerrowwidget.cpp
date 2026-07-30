@@ -5,6 +5,7 @@ ContainerRowWidget::ContainerRowWidget(
     const QString &label,
     const QString &icon,
     bool hasAction,
+    Status status,
     QWidget *parent)
     : QWidget(parent),
       ui(new Ui::ContainerRowWidget)
@@ -20,12 +21,17 @@ ContainerRowWidget::ContainerRowWidget(
     setLabel(label);
     setIcon(icon);
     setHasAction(hasAction);
-    setStatus(Status::Loading);
+    setStatus(status);
 }
 
 ContainerRowWidget::~ContainerRowWidget()
 {
     delete ui;
+}
+
+ContainerRowWidget::Status ContainerRowWidget::status() const
+{
+    return m_status;
 }
 
 void ContainerRowWidget::onToggleClicked()
