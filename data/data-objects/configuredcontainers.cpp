@@ -46,12 +46,16 @@ std::optional<ConfiguredContainers> ConfiguredContainers::fromYAML(const YAML::N
             continue;
         }
 
+        // backwards compatibility to accept both `action` and `executable`.
+        const YAML::Node executableNode = item["executable"] ? item["executable"]
+                                                             : item["action"];
         const QString name = QString::fromStdString(item["name"].as<std::string>(""));
         const QString label = QString::fromStdString(item["label"].as<std::string>(""));
         const QString icon = QString::fromStdString(item["icon"].as<std::string>(""));
-        const QString action = QString::fromStdString(item["action"].as<std::string>(""));
+        const QString executable = QString::fromStdString(
+            executableNode.as<std::string>(""));
 
-        config.m_containers.append(ContainerDefinition(name, label, icon, action));
+        config.m_containers.append(ContainerDefinition(name, label, icon, executable));
     }
 
     return config;

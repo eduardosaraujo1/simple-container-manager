@@ -9,14 +9,14 @@ QString AppConfigReader::defaultConfig =
     "#    label: Apache com PHP\n"
     "#  - name: oracle-xe-11g\n"
     "#    label: Oracle Express 11g\n"
-    "#    action: $HOME/Scripts/oracle-11g-launch.sh\n"
+    "#    executable: calc"
     "#  - name: postgresql\n"
     "#    label: PostgreSQL\n"
     "#    icon: /path/to/icon.svg\n"
     "#  - name: mysql\n"
     "#    label: MySQL 8.0\n"
     "#    icon: /path/to/icon.svg\n"
-    "#    action: xdg-open http://localhost/phpmyadmin\n";
+    "#    executable: xdg-open http://localhost/phpmyadmin\n";
 
 std::optional<ConfiguredContainers> AppConfigReader::readContainers()
 {

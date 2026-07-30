@@ -115,7 +115,7 @@ void ContainerListWidget::setContainerStatus(const QString &containerName, Conta
         || status == ContainerRowWidget::Status::Starting
         || status == ContainerRowWidget::Status::Stopping
         ) {
-        scheduleContainerTimeout(containerName);
+        scheduleContainerTimeout(containerName, 5000);
     }
 }
 

@@ -82,7 +82,7 @@ bool MainWindow::setupContainerList(ContainerService &containerService)
     setupContainerConnections(*m_listWidget, containerService);
 
     // Populate the widget
-    m_listWidget->initialize(containerService.containers().asList());
+    m_listWidget->initialize(containerService.containers().asList(), 5000);
     containerService.requestContainerUpdate();
 
     // Other constructor operations
