@@ -9,6 +9,7 @@
 #include <data/dockercli.h>
 #include <data/dockereventstream.h>
 #include <domain/containerservice.h>
+#include <domain/logmanager.h>
 
 namespace
 {
@@ -79,6 +80,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setStyle("windowsvista");
+
+    LogManager logManager(QtInfoMsg, 10); // capture Info+ , keep last 10 files
+    logManager.setup();
 
     qInfo() << "[main] Application starting.";
 

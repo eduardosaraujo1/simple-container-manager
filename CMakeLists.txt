@@ -37,6 +37,7 @@ qt_add_executable(simple-container-manager
     domain/dockereventstreamsupervisor.h domain/dockereventstreamsupervisor.cpp
     ui/throttledbutton.h ui/throttledbutton.cpp
     setupinstructionswidget.h setupinstructionswidget.cpp setupinstructionswidget.ui
+    domain/logmanager.h domain/logmanager.cpp
 
 )
 
