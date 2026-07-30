@@ -35,8 +35,10 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 private:
-    bool initializeContainers();
-    void setupConnections();
+    bool setupWelcomeScreen();
+    bool setupContainerList(ContainerService &containerService);
+    void setupContainerConnections(ContainerListWidget &listWidget,
+                                   ContainerService &containerService);
     void setWarning(const QString &warning);
 private slots:
     void onExitClicked();
@@ -50,6 +52,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
+    bool m_initialized = false;
     ContainerService *m_containerService = nullptr;
     ContainerListWidget *m_listWidget = nullptr;
 };

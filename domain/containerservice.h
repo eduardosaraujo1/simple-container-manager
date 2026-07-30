@@ -43,6 +43,7 @@ public:
      *  is detected, a request for refresh containers will automatically be placed.
      */
     [[nodiscard]] bool isAutoRefreshUp() const;
+    [[nodiscard]] bool isConfigEmpty() const;
 
     [[nodiscard]] const ConfiguredContainers& containers() const;
 

@@ -32,6 +32,11 @@ bool ContainerService::isAutoRefreshUp() const
     return m_eventStream.isRunning();
 }
 
+bool ContainerService::isConfigEmpty() const
+{
+    return m_containerConfig.asList().isEmpty();
+}
+
 const ConfiguredContainers &ContainerService::containers() const
 {
     return m_containerConfig;

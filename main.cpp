@@ -42,7 +42,6 @@ namespace
                     "The application will start without any configured containers.");
                 break;
             case AppConfigReader::Error::TemplateWriteError:
-                hasCriticalError = true;
                 qWarning() << "[main] Failed to write the default config "
                               "template to disk; continuing with in-memory defaults.";
                 QMessageBox::warning(

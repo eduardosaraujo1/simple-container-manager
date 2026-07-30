@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include <setupinstructionswidget.h>
+#include <data/data-objects/containerdefinition.h>
 
 #include <QPushButton>
 #include <QTimer>
@@ -10,17 +12,19 @@ MainWindow::MainWindow(
     ContainerService &containerService,
     QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow), m_containerService(&containerService),
-    m_listWidget(new ContainerListWidget())
-    // parent intentionally unset ->addWidget() method automatically assigns a parent
+    , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
-    ui->lblWarning->hide();
-    ui->scrollAreaLayout->addWidget(m_listWidget);
+    if (containerService.isConfigEmpty()) {
+        setupWelcomeScreen();
+    } else {
+        m_containerService = &containerService;
+        setupContainerList(containerService);
+    }
 
-    setupConnections();
-    initializeContainers();
+    connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onExitClicked);
+    m_initialized = true;
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -29,12 +33,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    ui->lblWarning->hide();
-    ui->heading->hide();
-    ui->btnRefresh->setEnabled(false);
-    ui->scrollAreaLayout->addWidget(new SetupInstructionsWidget(this));
+    setupWelcomeScreen();
 
-    setupConnections();
+    connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onExitClicked);
+    m_initialized = true;
 }
 
 MainWindow::~MainWindow()
@@ -42,46 +44,64 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::setupConnections()
+void MainWindow::setupContainerConnections(ContainerListWidget &listWidget,
+                                           ContainerService &containerService)
 {
-    connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onExitClicked);
-
-    if (m_containerService && m_listWidget) {
-        connect(m_containerService, &ContainerService::containersUpdated,
-                this, &MainWindow::onContainersUpdated);
-
-        connect(m_containerService, &ContainerService::autoRefreshDown,
-                this, &MainWindow::onAutoRefreshDown);
-
-        connect(m_listWidget, &ContainerListWidget::containerToggle,
-                this, &MainWindow::onContainerToggleRequested);
-
-        connect(m_listWidget, &ContainerListWidget::containerAction,
-                this, &MainWindow::onContainerActionRequested);
-
-        connect(ui->btnRefresh, &QPushButton::clicked, this, &MainWindow::onRefreshClicked);
+    if (listWidget.isInitialized()) {
+        qWarning() << "[UI] Attempted to initialize container connections more than once. Ignoring request...";
+        return;
     }
+
+    connect(&containerService, &ContainerService::containersUpdated,
+            this, &MainWindow::onContainersUpdated);
+
+    connect(&containerService, &ContainerService::autoRefreshDown,
+            this, &MainWindow::onAutoRefreshDown);
+
+    connect(&listWidget, &ContainerListWidget::containerToggle,
+            this, &MainWindow::onContainerToggleRequested);
+
+    connect(&listWidget, &ContainerListWidget::containerAction,
+            this, &MainWindow::onContainerActionRequested);
+
+    connect(ui->btnRefresh, &QPushButton::clicked, this, &MainWindow::onRefreshClicked);
 
     qDebug() << "[UI] Successfully connected buttons to domain actions.";
 }
 
-bool MainWindow::initializeContainers()
+bool MainWindow::setupContainerList(ContainerService &containerService)
 {
-    if (!m_containerService || !m_listWidget) {
-        qWarning() << "[UI] Attempted to initialize container configuration without list widget.";
-        return false;
-    }
-    if (m_listWidget->isInitialized()) {
-        qWarning() << "[UI] Attempted to initialize container configuration more than once. Ignoring...";
+    if (m_listWidget || m_listWidget->isInitialized() || m_initialized) {
+        qWarning() << "[UI] Attempted to initialize container configuration more than once. Ignoring request...";
         return false;
     }
 
-    if (m_listWidget->initialize(m_containerService->containers().asList())) {
-        qInfo() << "[UI] Container list was initialized successfully.";
-        // initialize function (should) already log the failure path
-    }
+    // Setup the widgets
+    m_listWidget = new ContainerListWidget();
+    ui->scrollAreaLayout->addWidget(m_listWidget);
+    setupContainerConnections(*m_listWidget, containerService);
 
-    m_containerService->requestContainerUpdate();
+    // Populate the widget
+    m_listWidget->initialize(containerService.containers().asList());
+    containerService.requestContainerUpdate();
+
+    // Other constructor operations
+    ui->lblWarning->hide();
+
+    return true;
+}
+
+bool MainWindow::setupWelcomeScreen()
+{
+    if (m_listWidget || m_initialized) {
+        qWarning() << "[UI] Attempted to setup welcome screen when list widget already exists.";
+        return false;
+    }
+    ui->scrollAreaLayout->addWidget(new SetupInstructionsWidget(this));
+
+    ui->lblWarning->hide();
+    ui->heading->hide();
+    ui->btnRefresh->setEnabled(false);
 
     return true;
 }
@@ -116,13 +136,16 @@ void MainWindow::onContainerToggleRequested(const QString &containerName, bool i
                                      : ContainerRowWidget::Status::Stopping);
 
     if (isStartCommand) {
+        qInfo() << "[UI] Requesting start container " << containerName;
         m_containerService->startContainer(containerName);
     } else {
+        qInfo() << "[UI] Requesting stop container " << containerName;
         m_containerService->stopContainer(containerName);
     }
 
     // If the event stream (in-real-time status update) is down, trigger the update here
     if (! m_containerService->isAutoRefreshUp()) {
+        qInfo() << "[UI] Auto refresh is down. Performing automatic update";
         m_containerService->requestContainerUpdate();
     }
 }
@@ -145,6 +168,7 @@ void MainWindow::onContainersUpdated(const QList<ContainerState> &containers)
     }
 
     // Apply update to list
+    qInfo() << "[UI] Identified container list update. Applying refresh."
     m_listWidget->refreshContainerInfo(containers);
 
     // When a refresh is finished, ensure the user can click the refresh button again
