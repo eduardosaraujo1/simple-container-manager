@@ -20,7 +20,7 @@ MainWindow::MainWindow(
         setupWelcomeScreen();
     } else {
         m_containerService = &containerService;
-        setupContainerList(containerService);
+        setupContainerListScreen(containerService);
     }
 
     connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onExitClicked);
@@ -64,12 +64,11 @@ void MainWindow::setupContainerConnections(ContainerListWidget &listWidget,
     connect(&listWidget, &ContainerListWidget::containerAction,
             this, &MainWindow::onContainerActionRequested);
 
-    connect(ui->btnRefresh, &QPushButton::clicked, this, &MainWindow::onRefreshClicked);
 
     qDebug() << "[UI] Successfully connected buttons to domain actions.";
 }
 
-bool MainWindow::setupContainerList(ContainerService &containerService)
+bool MainWindow::setupContainerListScreen(ContainerService &containerService)
 {
     if (m_listWidget) {
         qWarning() << "[UI] Attempted to initialize container configuration more than once. Ignoring request...";
@@ -79,11 +78,18 @@ bool MainWindow::setupContainerList(ContainerService &containerService)
     // Setup the widgets
     m_listWidget = new ContainerListWidget();
     ui->scrollAreaLayout->addWidget(m_listWidget);
-    setupContainerConnections(*m_listWidget, containerService);
 
     // Populate the widget
     m_listWidget->initialize(containerService.containers().asList(), 5000);
     containerService.requestContainerUpdate();
+
+    // Hook up container UI to the domain service
+    setupContainerConnections(*m_listWidget, containerService);
+
+    // Setup refresh feature
+    m_refreshFeedbackTimeout.setSingleShot(true);
+    connect(ui->btnRefresh, &QPushButton::clicked, this, &MainWindow::onRefreshClicked);
+    connect(&m_refreshFeedbackTimeout, &QTimer::timeout, this, &MainWindow::onRefreshFeedbackTimeout);
 
     // Other constructor operations
     ui->lblWarning->hide();
@@ -124,8 +130,14 @@ void MainWindow::onRefreshClicked()
         return;
     }
 
-    qInfo() << "[UI] Request button clicked. Initiating request...";
+    qDebug() << "[UI] Request button clicked.";
 
+    // UI indicator
+    ui->lblRefreshMessage->setText("Loading...");
+    ui->btnRefresh->setDisabled(true);
+    m_refreshFeedbackTimeout.start(5000);
+
+    // Domain request action
     m_containerService->requestContainerUpdate();
 }
 
@@ -135,6 +147,7 @@ void MainWindow::onContainerToggleRequested(const QString &containerName, bool i
         qWarning() << "[UI] Received container toggle request without active ContainerService.";
         return;
     }
+
     // Set status to "Starting" or "Stopping" imediatelly because
     // to communicate "request was received and is in progress"
     m_listWidget->setContainerStatus(containerName, isStartCommand
@@ -179,7 +192,9 @@ void MainWindow::onContainersUpdated(const QList<ContainerState> &containers)
 
     // When a refresh is finished, ensure the user can click the refresh button again
     QTimer::singleShot(500, [this]() {
-        ui->btnRefresh->reenable();
+        m_refreshFeedbackTimeout.stop();
+        ui->lblRefreshMessage->setText("");
+        ui->btnRefresh->setDisabled(false);
     });
 }
 
@@ -193,6 +208,15 @@ void MainWindow::onAutoRefreshUp()
 {
     qInfo() << "[UI] Detected auto refresh restoration. Removing error...";
     setWarning("");
+}
+
+void MainWindow::onRefreshFeedbackTimeout()
+{
+    // Show error message in label
+    ui->lblRefreshMessage->setText("Refresh failed.");
+
+    // Reenable the button
+    ui->btnRefresh->setDisabled(false);
 }
 
 void MainWindow::setWarning(const QString &warning)

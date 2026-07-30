@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
 
 #include <data/data-objects/configuredcontainers.h>
 #include <domain/containerservice.h>
@@ -36,7 +37,7 @@ public:
     ~MainWindow() override;
 private:
     bool setupWelcomeScreen();
-    bool setupContainerList(ContainerService &containerService);
+    bool setupContainerListScreen(ContainerService &containerService);
     void setupContainerConnections(ContainerListWidget &listWidget,
                                    ContainerService &containerService);
     void setWarning(const QString &warning);
@@ -49,10 +50,13 @@ private slots:
     void onContainersUpdated(const QList<ContainerState> &containers);
     void onAutoRefreshDown();
     void onAutoRefreshUp();
+    void onRefreshFeedbackTimeout();
 private:
     Ui::MainWindow *ui;
 
     bool m_initialized = false;
+    bool m_waitingForRequestedRefresh;
+    QTimer m_refreshFeedbackTimeout;
     ContainerService *m_containerService = nullptr;
     ContainerListWidget *m_listWidget = nullptr;
 };

@@ -70,7 +70,19 @@
           </widget>
          </item>
          <item>
-          <widget class="ThrottledButton" name="btnRefresh">
+          <widget class="QLabel" name="lblRefreshMessage">
+           <property name="font">
+            <font>
+             <pointsize>7</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>l</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnRefresh">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -226,13 +238,6 @@ color: #534600;</string>
    </layout>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>ThrottledButton</class>
-   <extends>QPushButton</extends>
-   <header location="global">ui/throttledbutton.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="build/Desktop_Qt_6_11_1_MinGW_64_bit_Debug/.qt/rcc/app_images.qrc"/>
  </resources>
