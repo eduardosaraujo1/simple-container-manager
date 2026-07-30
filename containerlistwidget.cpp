@@ -82,16 +82,7 @@ void ContainerListWidget::refreshContainerInfo(
 {
     for (const ContainerState &container : containers)
     {
-        auto it = m_rows.find(container.name());
-
-        if (it == m_rows.end()) {
-            qWarning() << "[ContainerListWidget UI] The corresponding widget for '" << container.name() << "'' was"
-                          " not found. Status will not be displayed.";
-            continue;
-        }
-
-        it.value() // ContainerRowWidget
-            ->setStatus(mapStatus(container.status()));
+        setContainerStatus(container.name(), mapStatus(container.status()));
     }
 }
 
@@ -101,7 +92,29 @@ void ContainerListWidget::setContainerStatus(const QString &containerName, Conta
 
     if (it == m_rows.end()) {
         qWarning() << "[ContainerListWidget UI] The corresponding widget for '" << containerName << "'' was"
-                                                                                                    " not found. Status will not be displayed.";
+                      " not found. Status will not be displayed.";
+        return;
+    }
+
+    // Optimistic UI rule: the status cannot go from "Starting" to "Stopped"
+    // or from "Stopping" to "Running" because Starting means it will
+    // either soon be started. This does not cause an infinite loading
+    // problem because ContainerListWidget eventually sets this status
+    // to Unknown (at the time of writing this comment, through
+    // m_loadingFeedbackTimeout)
+    if (it.value()->status() == ContainerRowWidget::Status::Starting
+        && status == ContainerRowWidget::Status::Stopped) {
+        qWarning() << QString("[ContainerListWidget UI] Attempted to set container '%1' row "
+                              "status from Starting to Stopped. This operation is "
+                              "not allowed.").arg(containerName);
+        return;
+    }
+
+    if (it.value()->status() == ContainerRowWidget::Status::Stopping
+        && status == ContainerRowWidget::Status::Started) {
+        qWarning() << QString("[ContainerListWidget UI] Attempted to set container '%1' row "
+                              "status from Stopping to Running. This operation is "
+                              "not allowed.").arg(containerName);
         return;
     }
 
