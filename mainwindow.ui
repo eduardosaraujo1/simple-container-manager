@@ -60,12 +60,12 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>14</pointsize>
+             <pointsize>12</pointsize>
              <bold>true</bold>
             </font>
            </property>
            <property name="text">
-            <string>Simple Container Manager v1.0</string>
+            <string>Simple Container Manager </string>
            </property>
           </widget>
          </item>
@@ -133,7 +133,7 @@
            <x>0</x>
            <y>0</y>
            <width>687</width>
-           <height>332</height>
+           <height>336</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="scrollAreaLayout">
@@ -169,7 +169,7 @@
 color: #534600;</string>
         </property>
         <property name="text">
-         <string>**Warning**: Auto refresh has crashed. Container state may become stale.</string>
+         <string>**Warning**: Undefined</string>
         </property>
         <property name="textFormat">
          <enum>Qt::TextFormat::MarkdownText</enum>

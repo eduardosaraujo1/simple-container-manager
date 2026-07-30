@@ -31,17 +31,13 @@ public:
     explicit MainWindow(
         ContainerService &containerService,
         QWidget *parent = nullptr);
+    /// When no ContainerService is provided, the default welcome screen is displayed instead
     explicit MainWindow(QWidget *parent = nullptr);
-
     ~MainWindow() override;
-
 private:
-    void initializeContainers(const ConfiguredContainers &containers);
-
+    bool initializeContainers();
     void setupConnections();
-
     void setWarning(const QString &warning);
-
 private slots:
     void onExitClicked();
     void onRefreshClicked();
@@ -50,7 +46,7 @@ private slots:
     void onContainerActionRequested(const QString &containerName);
     void onContainersUpdated(const QList<ContainerState> &containers);
     void onAutoRefreshDown();
-
+    void onAutoRefreshUp();
 private:
     Ui::MainWindow *ui;
 
