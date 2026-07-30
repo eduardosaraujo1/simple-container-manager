@@ -111,6 +111,8 @@ void ContainerListWidget::setContainerStatus(const QString &containerName, Conta
         ->setStatus(status);
 
     // Timeout to NotFound if Loading, Starting of Stopping remains for too long.
+    // Note: this does cause a race condition (if the starting condition leaves
+    //and then comes back, the previous timer will still trigger)
     if (status == ContainerRowWidget::Status::Loading
         || status == ContainerRowWidget::Status::Starting
         || status == ContainerRowWidget::Status::Stopping
