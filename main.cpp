@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
     std::optional<ConfiguredContainers> containers = loadAppConfig();
 
-    if (!containers.has_value()) {
+    if (!containers.has_value() || !containers.value().hasContainers()) {
         qWarning() << "[main] Starting MainWindow without ContainerService.";
         MainWindow w;
         w.show();

@@ -26,7 +26,8 @@ DockerEventStream::~DockerEventStream()
 
     if (m_process.state() == QProcess::Running)
     {
-        qWarning() << "[DockerEventStream] Stream was not grafecully closed before shutdown. Emitting terminate signal.";
+        qWarning() << "[DockerEventStream] Stream was not grafecully closed before "
+        "DockerEventStream destruction. Emitting terminate signal.";
         m_process.kill();
     }
 }

@@ -58,6 +58,14 @@ void LogManager::messageHandler(QtMsgType type, const QMessageLogContext &contex
 {
     Q_UNUSED(context);
 
+    if (type == QtMsgType::QtCriticalMsg) {
+        fprintf(stderr, "%s\n", qUtf8Printable(msg));
+        fflush(stderr);
+    } else {
+        fprintf(stdout, "%s\n", qUtf8Printable(msg));
+        fflush(stdout);
+    }
+
     if (s_instance)
         s_instance->handleMessage(type, msg);
 
