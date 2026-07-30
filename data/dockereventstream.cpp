@@ -93,7 +93,7 @@ void DockerEventStream::onReadyRead()
 
         if (auto event = parseDockerEvent(rawLine))
         {
-            qDebug() << QString("[DockerEventStream] Event %1 received.").arg(event->toString());
+            qDebug() << QString("[DockerEventStream] Event received: %1").arg(event->toString());
 
             emit eventReceived(*event);
             continue;

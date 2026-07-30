@@ -56,7 +56,7 @@ private slots:
 private:
     void scheduleRestart(int delayMs);
 
-    static constexpr int kBackoffMs = 500;
+    static constexpr int kBackoffMs = 2000;
     static constexpr int kMaxConsecutiveFailures = 3;
 
     DockerEventStream &m_stream;
