@@ -37,7 +37,7 @@ const ConfiguredContainers &ContainerService::containers() const
     return m_containerConfig;
 }
 
-void ContainerService::refreshContainers()
+void ContainerService::requestContainerUpdate()
 {
     // Only ask Docker about containers the user actually configured;
     // anything else running on the host is none of our business.
@@ -107,7 +107,7 @@ void ContainerService::onDockerEvent(const DockerEvent &event)
 {
     Q_UNUSED(event);
 
-    refreshContainers();
+    requestContainerUpdate();
 }
 
 void ContainerService::onCriticalStreamFailure()

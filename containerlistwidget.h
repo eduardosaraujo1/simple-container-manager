@@ -21,7 +21,7 @@ public:
     explicit ContainerListWidget(QWidget *parent = nullptr);
     ~ContainerListWidget();
 
-    void initialize(const QList<ContainerDefinition> &containers);
+    bool initialize(const QList<ContainerDefinition> &containers);
     [[nodiscard]] bool isInitialized();
 public slots:
     void refreshContainerInfo(const QList<ContainerState> &containers);

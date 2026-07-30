@@ -47,8 +47,11 @@ public:
     [[nodiscard]] const ConfiguredContainers& containers() const;
 
 public slots:
-    /** @brief Requests an up-to-date status of tracked containers from Docker. */
-    void refreshContainers();
+    /** @brief Requests an up-to-date status of tracked containers from Docker.
+     *
+     *  Emits signal `containersUpdated` when request is finished.
+     */
+    void requestContainerUpdate();
 
     /** @brief Starts the given container. */
     void startContainer(const QString &containerName);

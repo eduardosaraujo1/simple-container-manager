@@ -7,13 +7,13 @@ ContainerListWidget::ContainerListWidget(QWidget *parent)
     ui->setupUi(this);
 }
 
-void ContainerListWidget::initialize(
+bool ContainerListWidget::initialize(
     const QList<ContainerDefinition> &containers)
 {
     if (m_initialized)
     {
         qWarning() << "[UI ContainerListWidget] Attempted to initialize more than once. This is unsupported.";
-        return;
+        return false;
     }
 
     for (const ContainerDefinition &spec : containers)
@@ -54,6 +54,8 @@ void ContainerListWidget::initialize(
     ui->loading->hide();
     ui->contentsLayout->addStretch();
     m_initialized = true;
+
+    return true;
 }
 
 bool ContainerListWidget::isInitialized()
