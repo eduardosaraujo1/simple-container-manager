@@ -142,10 +142,10 @@ void MainWindow::onContainerToggleRequested(const QString &containerName, bool i
                                      : ContainerRowWidget::Status::Stopping);
 
     if (isStartCommand) {
-        qInfo() << "[UI] Requesting start container " << containerName;
+        qInfo() << "[UI] Requesting start container" << containerName;
         m_containerService->startContainer(containerName);
     } else {
-        qInfo() << "[UI] Requesting stop container " << containerName;
+        qInfo() << "[UI] Requesting stop container" << containerName;
         m_containerService->stopContainer(containerName);
     }
 

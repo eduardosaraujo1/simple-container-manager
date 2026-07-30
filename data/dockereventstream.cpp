@@ -17,7 +17,7 @@ DockerEventStream::DockerEventStream(QObject *parent)
     connect(&m_process, &QProcess::started, this, &DockerEventStream::started);
     connect(&m_process, &QProcess::readyReadStandardOutput, this, &DockerEventStream::onReadyRead);
     connect(&m_process, &QProcess::readyReadStandardError, [this]()
-            { qDebug() << "[DockerEventStream] Standard error captured: " << m_process.readAllStandardError(); });
+            { qDebug() << "[DockerEventStream] Standard error captured:" << m_process.readAllStandardError(); });
 }
 
 DockerEventStream::~DockerEventStream()

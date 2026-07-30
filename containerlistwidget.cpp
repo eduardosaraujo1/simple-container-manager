@@ -36,7 +36,7 @@ bool ContainerListWidget::initialize(
                 this,
                 [this, containerName](bool start)
                 {
-                    qInfo() << "[ContainerListWidget UI] Requesting to `" << (start ? "start" : "stop") << "` container " << containerName;
+                    qInfo() << "[ContainerListWidget UI] Requesting" << (start ? "start" : "stop") << "acton on container" << containerName;
                     emit containerToggle(containerName, start);
                 });
 
@@ -45,7 +45,7 @@ bool ContainerListWidget::initialize(
                 this,
                 [this, containerName]()
                 {
-                    qInfo() << "[ContainerListWidget UI] Requesting to run admin command from " << containerName;
+                    qInfo() << "[ContainerListWidget UI] Requesting to run admin command from" << containerName;
                     emit containerAction(containerName);
                 });
 

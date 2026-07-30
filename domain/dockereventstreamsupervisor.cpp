@@ -53,7 +53,7 @@ void DockerEventStreamSupervisor::onStreamStopped()
         return;
     }
 
-    qInfo() << "[DockerEventStreamSupervisor] Identified " << m_consecutiveFailures+1 << " consecutive stream failure.";
+    qInfo() << "[DockerEventStreamSupervisor] Identified" << m_consecutiveFailures+1 << "consecutive stream failure.";
 
     ++m_consecutiveFailures;
 

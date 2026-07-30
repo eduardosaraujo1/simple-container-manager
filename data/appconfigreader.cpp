@@ -46,7 +46,7 @@ namespace
             if (!dir.mkpath("."))
             {
                 qWarning() << "[AppConfigReader Directory Setup] \"make directory\" operation failed\n"
-                           << "Config path: " << configFilePath << "\n";
+                           << "Config path:" << configFilePath << "\n";
                 return false;
             }
         }
@@ -59,8 +59,8 @@ namespace
         if (!setupConfigDirectory(filePath))
         {
             qWarning() << "[AppConfigReader Config File Writer] Failed to create directory containing the config."
-                       << "Config path: " << filePath << "\n"
-                       << "Content: " << content;
+                       << "Config path:" << filePath << "\n"
+                       << "Content:" << content;
             return false;
         }
 
@@ -69,15 +69,15 @@ namespace
         if (!file.open(QFile::ReadWrite | QFile::Truncate))
         {
             qWarning() << "[AppConfigReader Config File Writer] failed to open file resource for writing; interrupting config file write process\n"
-                       << "Config path: " << filePath << "\n"
-                       << "Content: " << content;
+                       << "Config path:" << filePath << "\n"
+                       << "Content:" << content;
             return false;
         }
 
         if (file.write(content.toUtf8()) == -1)
         {
             qWarning() << "[AppConfigReader Config File Writer] failed to write config content to config file.\n"
-                       << "Config path: " << filePath;
+                       << "Config path:" << filePath;
             return false;
         }
 
