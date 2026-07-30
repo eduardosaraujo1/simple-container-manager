@@ -128,7 +128,7 @@ void DockerCLI::runToggleCommand(const QString &containerId, bool isStartCommand
     QProcess *process = new QProcess(this);
 
     QObject::connect(process, &QProcess::finished, this,
-                     [&](int exitCode, QProcess::ExitStatus exitStatus) {
+                     [process, isStartCommand](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitCode != 0 || exitStatus == QProcess::ExitStatus::CrashExit) {
             qCritical() << "[DockerCLI] an unexpected error occurred" <<
                 (isStartCommand ? "starting" : "stopping") << "docker process.\nExit code:"
@@ -139,7 +139,7 @@ void DockerCLI::runToggleCommand(const QString &containerId, bool isStartCommand
         process->deleteLater();
     });
 
-    QObject::connect(process, &QProcess::errorOccurred, this, [&](QProcess::ProcessError)
+    QObject::connect(process, &QProcess::errorOccurred, this, [process, isStartCommand](QProcess::ProcessError)
     {
         qCritical() << "[DockerCLI] Unexpected error" << (isStartCommand ? "starting" : "stopping")
                     << "Docker process:" << process->errorString();
@@ -150,8 +150,6 @@ void DockerCLI::runToggleCommand(const QString &containerId, bool isStartCommand
         isStartCommand ? "start" : "stop",
         containerId
     });
-
-    process->waitForFinished();
 }
 
 void DockerCLI::startContainer(const QString &containerId) {
