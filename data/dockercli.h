@@ -25,7 +25,7 @@ public slots:
 private slots:
     void onProcessDone(int exitCode, QProcess::ExitStatus status);
 signals:
-    void containersUpdated(const QList<ContainerState> &containers);
+    void containersUpdated(const QList<ContainerState> containers);
     void parseErrorOccurred();
 private:
     QProcess m_proc{this};

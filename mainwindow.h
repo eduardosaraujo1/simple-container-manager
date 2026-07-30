@@ -47,7 +47,7 @@ private slots:
     void onContainerToggleRequested(
         const QString &containerName, bool isStartCommand);
     void onContainerActionRequested(const QString &containerName);
-    void onContainersUpdated(const QList<ContainerState> &containers);
+    void onContainersUpdated(const QList<ContainerState> containers);
     void onAutoRefreshDown();
     void onAutoRefreshUp();
     void onRefreshFeedbackTimeout();
@@ -55,6 +55,7 @@ private:
     Ui::MainWindow *ui;
 
     bool m_initialized = false;
+    bool m_connectionsInitialized = false;
     bool m_waitingForRequestedRefresh;
     QTimer m_refreshFeedbackTimeout;
     ContainerService *m_containerService = nullptr;

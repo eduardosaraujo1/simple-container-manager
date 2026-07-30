@@ -47,8 +47,8 @@ MainWindow::~MainWindow()
 void MainWindow::setupContainerConnections(ContainerListWidget &listWidget,
                                            ContainerService &containerService)
 {
-    if (listWidget.isInitialized()) {
-        qWarning() << "[UI] Attempted to initialize container connections more than once. Ignoring request...";
+    if (m_connectionsInitialized == true){
+        qWarning() << "[UI] Attempted to initialize UI connections more than once. Ignoring request..";
         return;
     }
 
@@ -64,6 +64,7 @@ void MainWindow::setupContainerConnections(ContainerListWidget &listWidget,
     connect(&listWidget, &ContainerListWidget::containerAction,
             this, &MainWindow::onContainerActionRequested);
 
+    m_connectionsInitialized = true;
 
     qDebug() << "[UI] Successfully connected buttons to domain actions.";
 }
@@ -179,7 +180,7 @@ void MainWindow::onContainerActionRequested(const QString &containerName)
     m_containerService->runAction(containerName);
 }
 
-void MainWindow::onContainersUpdated(const QList<ContainerState> &containers)
+void MainWindow::onContainersUpdated(const QList<ContainerState> containers)
 {
     if (!m_containerService || !m_listWidget) {
         qWarning() << "[UI] Received container list update without available list widget or ContainerService.";
