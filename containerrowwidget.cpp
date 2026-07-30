@@ -98,10 +98,15 @@ void ContainerRowWidget::setStatus(Status status)
     case Status::NotFound:
         ui->status->setText("Not Found");
         ui->toggle->setText("Start");
-        ui->toggle->setDisabled(false);
+        ui->toggle->setDisabled(true);
         break;
     case Status::Loading:
         ui->status->setText("Loading");
+        ui->toggle->setText("Start");
+        ui->toggle->setDisabled(true);
+        break;
+    case Status::Unknown:
+        ui->status->setText("Unknown");
         ui->toggle->setText("Start");
         ui->toggle->setDisabled(true);
         break;
@@ -143,6 +148,7 @@ void ContainerRowWidget::updateStatusStyle()
         break;
 
     case Status::Loading:
+    case Status::Unknown:
         ui->status->setStyleSheet(
             "color: #404040;"
             "background-color: #E0E0E0;");

@@ -5,6 +5,9 @@ ContainerListWidget::ContainerListWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::ContainerListWidget)
 {
     ui->setupUi(this);
+
+    m_loadingFeedbackTimeout.setSingleShot(true);
+    connect(&m_loadingFeedbackTimeout, &QTimer::timeout, this, &ContainerListWidget::onLoadingFeedbackTimeout);
 }
 
 bool ContainerListWidget::initialize(
@@ -54,14 +57,7 @@ bool ContainerListWidget::initialize(
     }
 
     // After X seconds of initialization, any container that was Loading becomes NotFound.
-    QTimer::singleShot(loadingTimeout, this, [this]() {
-        qInfo() << "[ContainerListWidget UI] Applying not found status to containers past the timeout.";
-        for (ContainerRowWidget *row : std::as_const(m_rows)) {
-            if (row && row->status() == ContainerRowWidget::Status::Loading) {
-                row->setStatus(ContainerRowWidget::Status::NotFound);
-            }
-        }
-    });
+    m_loadingFeedbackTimeout.start(loadingTimeout);
 
     // Finish up initialization
     ui->loading->hide();
@@ -89,7 +85,8 @@ void ContainerListWidget::refreshContainerInfo(
         auto it = m_rows.find(container.name());
 
         if (it == m_rows.end()) {
-            qWarning() << "[ContainerListWidget UI] The corresponding widget for '" << container.name() << "'' was not found. Status will not be displayed.";
+            qWarning() << "[ContainerListWidget UI] The corresponding widget for '" << container.name() << "'' was"
+                          " not found. Status will not be displayed.";
             continue;
         }
 
@@ -103,19 +100,20 @@ void ContainerListWidget::setContainerStatus(const QString &containerName, Conta
     auto it = m_rows.find(containerName);
 
     if (it == m_rows.end()) {
-        qWarning() << "[ContainerListWidget UI] The corresponding widget for '" << containerName << "'' was not found. Status will not be displayed.";
+        qWarning() << "[ContainerListWidget UI] The corresponding widget for '" << containerName << "'' was"
+                                                                                                    " not found. Status will not be displayed.";
         return;
     }
 
     it.value() // ContainerRowWidget
         ->setStatus(status);
 
-    // Timeout to NotFound if Loading, Starting of Stopping remains for too long.
+    // Timeout to a non-ephemeral status if Loading, Starting of Stopping remains for too long.
     if (status == ContainerRowWidget::Status::Loading
         || status == ContainerRowWidget::Status::Starting
         || status == ContainerRowWidget::Status::Stopping
         ) {
-        scheduleContainerTimeout(containerName, 5000);
+        m_loadingFeedbackTimeout.start(5000);
     }
 }
 
@@ -137,25 +135,28 @@ ContainerListWidget::mapStatus(ContainerState::Status status)
 
     case ContainerState::Status::Paused:
     case ContainerState::Status::Dead:
+        return ContainerRowWidget::Status::NotFound;
     case ContainerState::Status::Unknown:
     default:
-        return ContainerRowWidget::Status::NotFound;
+        return ContainerRowWidget::Status::Unknown;
     }
 }
 
-void ContainerListWidget::scheduleContainerTimeout(const QString &containerName, int timeout)
+void ContainerListWidget::onLoadingFeedbackTimeout()
 {
-    QTimer::singleShot(timeout, this, [this, containerName]() {
-        auto it = m_rows.find(containerName);
-        if (it == m_rows.end()) return;
-        ContainerRowWidget *row = it.value();
-
-            if (row && (row->status() == ContainerRowWidget::Status::Loading
-                    || row->status() == ContainerRowWidget::Status::Starting
-                    || row->status() == ContainerRowWidget::Status::Stopping)) {
-                qInfo() << "[ContainerListWidget UI] Docker did not respond with permanent"
-                           << "state in time for" << containerName;
-                row->setStatus(ContainerRowWidget::Status::NotFound);
-            }
-    });
+    qInfo() << "[ContainerListWidget UI] Loading timeout reached. Converting "
+               "any Loading container to NotFound and Starting/Stopping "
+               "containers to Unknown.";
+    for (ContainerRowWidget *row : std::as_const(m_rows)) {
+        if (!row) continue;
+        if (row->status() == ContainerRowWidget::Status::Loading) {
+            row->setStatus(ContainerRowWidget::Status::NotFound);
+            continue;
+        }
+        if (row->status() == ContainerRowWidget::Status::Starting
+            || row->status() == ContainerRowWidget::Status::Stopping) {
+            row->setStatus(ContainerRowWidget::Status::Unknown);
+            continue;
+        }
+    }
 }

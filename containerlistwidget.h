@@ -27,7 +27,8 @@ public:
 public slots:
     void refreshContainerInfo(const QList<ContainerState> &containers);
     void setContainerStatus(const QString &containerName, ContainerRowWidget::Status status);
-    void scheduleContainerTimeout(const QString &containerName, int timeout=10000);
+private slots:
+    void onLoadingFeedbackTimeout();
 
 signals:
     void containerToggle(const QString &containerName, bool isStartCommand);
@@ -38,7 +39,7 @@ private:
     Ui::ContainerListWidget *ui;
 
     bool m_initialized = false;
-
+    QTimer m_loadingFeedbackTimeout;
     QHash<QString, ContainerRowWidget*> m_rows;
 };
 

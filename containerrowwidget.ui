@@ -123,9 +123,12 @@
       <number>4</number>
      </property>
      <item>
-      <widget class="QPushButton" name="toggle">
+      <widget class="ThrottledButton" name="toggle">
        <property name="text">
         <string>Start</string>
+       </property>
+       <property name="throttledMilliseconds" stdset="0">
+        <number>700</number>
        </property>
       </widget>
      </item>

@@ -20,7 +20,8 @@ public:
         Loading,
         Starting,
         Stopping,
-        NotFound
+        NotFound,
+        Unknown
     };
 
     explicit ContainerRowWidget(
