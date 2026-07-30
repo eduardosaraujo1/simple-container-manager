@@ -22,8 +22,9 @@ public:
     explicit DockerEventStream(QObject *parent = nullptr);
     ~DockerEventStream();
 
-    bool isRunning() const;
-
+    [[nodiscard]] bool isRunning() const;
+    [[nodiscard]] bool isStarting() const;
+    [[nodiscard]] bool isNotRunning() const;
 public slots:
     void start();
     void stop();

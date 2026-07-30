@@ -59,7 +59,7 @@ private:
     static constexpr int kBackoffMs = 500;
     static constexpr int kMaxConsecutiveFailures = 3;
 
-    DockerEventStream *m_stream;
+    DockerEventStream &m_stream;
     QTimer m_retryTimer;
     int m_consecutiveFailures = 0;
     bool m_active = false;

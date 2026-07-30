@@ -36,6 +36,16 @@ bool DockerEventStream::isRunning() const
     return m_process.state() == QProcess::Running;
 }
 
+bool DockerEventStream::isStarting() const
+{
+    return m_process.state() == QProcess::Starting;
+}
+
+bool DockerEventStream::isNotRunning() const
+{
+    return m_process.state() == QProcess::NotRunning;
+}
+
 void DockerEventStream::stop()
 {
     if (m_process.state() != QProcess::Running)
@@ -104,6 +114,7 @@ void DockerEventStream::onProcessError(QProcess::ProcessError error)
     {
     case QProcess::FailedToStart:
         emit errorOccurred(StreamError::FailedToStart);
+        emit stopped();
         break;
 
     case QProcess::Crashed:
@@ -125,7 +136,8 @@ void DockerEventStream::onProcessFinished(int exitCode,
             << "[DockerEventStream] Process terminated unexpectedly."
             << "Exit code:" << exitCode;
 
-        emit errorOccurred(StreamError::ProcessCrashed);
+        // emit errorOccurred(StreamError::ProcessCrashed);
+        // It appears QProcess emits error signal when CrashExit happens.
     }
     else
     {
