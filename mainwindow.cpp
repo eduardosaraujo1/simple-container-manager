@@ -20,6 +20,7 @@ MainWindow::MainWindow(
     ui->scrollAreaLayout->addWidget(m_listWidget);
 
     setupConnections();
+    initializeContainers();
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -71,10 +72,15 @@ bool MainWindow::initializeContainers()
         return false;
     }
     if (m_listWidget->isInitialized()) {
+        qWarning() << "[UI] Attempted to initialize container configuration more than once. Ignoring...";
         return false;
     }
 
-    m_listWidget->initialize(m_containerService->containers().asList());
+    if (m_listWidget->initialize(m_containerService->containers().asList())) {
+        qInfo() << "[UI] Container list was initialized successfully.";
+        // initialize function (should) already log the failure path
+    }
+
     m_containerService->requestContainerUpdate();
 
     return true;
@@ -91,6 +97,8 @@ void MainWindow::onRefreshClicked()
         qWarning() << "[UI] Received container refresh request without active ContainerService.";
         return;
     }
+
+    qInfo() << "[UI] Request button clicked. Initiating request...";
 
     m_containerService->requestContainerUpdate();
 }

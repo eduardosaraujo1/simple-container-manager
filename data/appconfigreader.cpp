@@ -153,7 +153,7 @@ void AppConfigReader::readConfigFile()
     else
     {
         qWarning() << "[AppConfigReader] preferences.yaml was not found. Attempting to write default file";
-        if (writeConfigFile(AppConfigReader::defaultConfig, m_configPath)) {
+        if (!writeConfigFile(AppConfigReader::defaultConfig, m_configPath)) {
             emit errorOccurred(Error::TemplateWriteError);
         }
 
